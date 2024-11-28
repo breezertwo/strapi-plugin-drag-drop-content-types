@@ -1,6 +1,6 @@
 {
   "name": "@breezertwo/strapi-plugin-drag-drop-content-types",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "This plugin add a drag and droppable list that allows you to sort content type entries.",
   "strapi": {
     "kind": "plugin",
@@ -81,11 +81,7 @@
     "react-router-dom": "^6.26.2",
     "styled-components": "^6.1.13"
   },
-  "author": {
-    "name": "breezertwo <andreas@heynanny.com>",
-    "email": "andreas@heynanny.com",
-    "url": "https://heynanny.com/"
-  },
+  "author": "breezertwo <andreas@heynanny.com> (https://heynanny.com/)",
   "maintainers": [
     {
       "name": "https://heynanny.com/",
