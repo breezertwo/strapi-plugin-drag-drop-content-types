@@ -6,7 +6,7 @@ const admin = require("@strapi/strapi/admin");
 const designSystem = require("@strapi/design-system");
 const icons = require("@strapi/icons");
 const reactIntl = require("react-intl");
-const index$1 = require("./index-D_LeA5x6.js");
+const index$1 = require("./index-t6drXiAS.js");
 const ReactDOM = require("react-dom");
 function _interopNamespace(e) {
   if (e && e.__esModule)
@@ -3643,4 +3643,4 @@ const Settings = () => {
   ] });
 };
 exports.default = Settings;
-//# sourceMappingURL=Settings-15t09Q_R.js.map
+//# sourceMappingURL=Settings-CCmyLtnw.js.map

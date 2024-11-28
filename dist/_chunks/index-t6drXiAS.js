@@ -1,15 +1,34 @@
-import * as React from "react";
-import React__default, { useRef, useEffect, useContext, useState, forwardRef } from "react";
-import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-import { arrayMoveImmutable } from "array-move";
-import "react-dom";
-import { useFetchClient, useNotification, useAPIErrorHandler } from "@strapi/strapi/admin";
-import { Box, Flex, Typography, Divider, Button, Popover, IconButton } from "@strapi/design-system";
-import { Drag } from "@strapi/icons";
-import { useIntl } from "react-intl";
-import { useSensors, useSensor, PointerSensor, TouchSensor, DndContext, closestCenter } from "@dnd-kit/core";
-import { useSortable, SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+"use strict";
+const React = require("react");
+const jsxRuntime = require("react/jsx-runtime");
+const arrayMove = require("array-move");
+require("react-dom");
+const admin = require("@strapi/strapi/admin");
+const designSystem = require("@strapi/design-system");
+const icons = require("@strapi/icons");
+const reactIntl = require("react-intl");
+const core = require("@dnd-kit/core");
+const sortable = require("@dnd-kit/sortable");
+const utilities = require("@dnd-kit/utilities");
+function _interopNamespace(e) {
+  if (e && e.__esModule)
+    return e;
+  const n = Object.create(null, { [Symbol.toStringTag]: { value: "Module" } });
+  if (e) {
+    for (const k in e) {
+      if (k !== "default") {
+        const d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: () => e[k]
+        });
+      }
+    }
+  }
+  n.default = e;
+  return Object.freeze(n);
+}
+const React__namespace = /* @__PURE__ */ _interopNamespace(React);
 const __variableDynamicImportRuntimeHelper = (glob, path) => {
   const v = glob[path];
   if (v) {
@@ -21,8 +40,8 @@ const __variableDynamicImportRuntimeHelper = (glob, path) => {
 };
 const PLUGIN_ID = "drag-drop-content-types";
 const Initializer = ({ setPlugin }) => {
-  const ref = useRef(setPlugin);
-  useEffect(() => {
+  const ref = React.useRef(setPlugin);
+  React.useEffect(() => {
     ref.current(PLUGIN_ID);
   }, []);
   return null;
@@ -43,7 +62,7 @@ function requireUseSyncExternalStoreShim_production_min() {
   if (hasRequiredUseSyncExternalStoreShim_production_min)
     return useSyncExternalStoreShim_production_min;
   hasRequiredUseSyncExternalStoreShim_production_min = 1;
-  var e = React__default;
+  var e = React__namespace.default;
   function h(a, b) {
     return a === b && (0 !== a || 1 / a === 1 / b) || a !== a && b !== b;
   }
@@ -101,7 +120,7 @@ function requireUseSyncExternalStoreShim_development() {
       if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
         __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
       }
-      var React2 = React__default;
+      var React2 = React__namespace.default;
       var ReactSharedInternals = React2.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
       function error(format) {
         {
@@ -132,7 +151,7 @@ function requireUseSyncExternalStoreShim_development() {
         return x === y && (x !== 0 || 1 / x === 1 / y) || x !== x && y !== y;
       }
       var objectIs = typeof Object.is === "function" ? Object.is : is;
-      var useState2 = React2.useState, useEffect2 = React2.useEffect, useLayoutEffect = React2.useLayoutEffect, useDebugValue = React2.useDebugValue;
+      var useState = React2.useState, useEffect = React2.useEffect, useLayoutEffect = React2.useLayoutEffect, useDebugValue = React2.useDebugValue;
       var didWarnOld18Alpha = false;
       var didWarnUncachedGetSnapshot = false;
       function useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
@@ -154,7 +173,7 @@ function requireUseSyncExternalStoreShim_development() {
             }
           }
         }
-        var _useState = useState2({
+        var _useState = useState({
           inst: {
             value,
             getSnapshot
@@ -169,7 +188,7 @@ function requireUseSyncExternalStoreShim_development() {
             });
           }
         }, [subscribe, value, getSnapshot]);
-        useEffect2(function() {
+        useEffect(function() {
           if (checkIfSnapshotChanged(inst)) {
             forceUpdate({
               inst
@@ -233,7 +252,7 @@ function requireWithSelector_production_min() {
   if (hasRequiredWithSelector_production_min)
     return withSelector_production_min;
   hasRequiredWithSelector_production_min = 1;
-  var h = React__default, n = shimExports;
+  var h = React__namespace.default, n = shimExports;
   function p(a, b) {
     return a === b && (0 !== a || 1 / a === 1 / b) || a !== a && b !== b;
   }
@@ -304,16 +323,16 @@ function requireWithSelector_development() {
       if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
         __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
       }
-      var React2 = React__default;
+      var React2 = React__namespace.default;
       var shim2 = shimExports;
       function is(x, y) {
         return x === y && (x !== 0 || 1 / x === 1 / y) || x !== x && y !== y;
       }
       var objectIs = typeof Object.is === "function" ? Object.is : is;
       var useSyncExternalStore = shim2.useSyncExternalStore;
-      var useRef2 = React2.useRef, useEffect2 = React2.useEffect, useMemo = React2.useMemo, useDebugValue = React2.useDebugValue;
+      var useRef = React2.useRef, useEffect = React2.useEffect, useMemo = React2.useMemo, useDebugValue = React2.useDebugValue;
       function useSyncExternalStoreWithSelector(subscribe, getSnapshot, getServerSnapshot, selector, isEqual) {
-        var instRef = useRef2(null);
+        var instRef = useRef(null);
         var inst;
         if (instRef.current === null) {
           inst = {
@@ -368,7 +387,7 @@ function requireWithSelector_development() {
           return [getSnapshotWithSelector, getServerSnapshotWithSelector];
         }, [getSnapshot, getServerSnapshot, selector, isEqual]), getSelection = _useMemo[0], getServerSelection = _useMemo[1];
         var value = useSyncExternalStore(subscribe, getSelection, getServerSelection);
-        useEffect2(function() {
+        useEffect(function() {
           inst.hasValue = true;
           inst.value = value;
         }, [value]);
@@ -395,23 +414,23 @@ const gT = typeof globalThis !== "undefined" ? globalThis : (
 );
 function getContext() {
   var _gT$ContextKey;
-  if (!React.createContext)
+  if (!React__namespace.createContext)
     return {};
   const contextMap = (_gT$ContextKey = gT[ContextKey]) != null ? _gT$ContextKey : gT[ContextKey] = /* @__PURE__ */ new Map();
-  let realContext = contextMap.get(React.createContext);
+  let realContext = contextMap.get(React__namespace.createContext);
   if (!realContext) {
-    realContext = React.createContext(null);
+    realContext = React__namespace.createContext(null);
     if (process.env.NODE_ENV !== "production") {
       realContext.displayName = "ReactRedux";
     }
-    contextMap.set(React.createContext, realContext);
+    contextMap.set(React__namespace.createContext, realContext);
   }
   return realContext;
 }
 const ReactReduxContext = /* @__PURE__ */ getContext();
 function createReduxContextHook(context = ReactReduxContext) {
   return function useReduxContext2() {
-    const contextValue = useContext(context);
+    const contextValue = React.useContext(context);
     if (process.env.NODE_ENV !== "production" && !contextValue) {
       throw new Error("could not find react-redux context value; please ensure the component is wrapped in a <Provider>");
     }
@@ -602,7 +621,7 @@ function requireReactIs_development$1() {
       var ContextProvider = REACT_PROVIDER_TYPE;
       var Element = REACT_ELEMENT_TYPE;
       var ForwardRef = REACT_FORWARD_REF_TYPE;
-      var Fragment2 = REACT_FRAGMENT_TYPE;
+      var Fragment = REACT_FRAGMENT_TYPE;
       var Lazy = REACT_LAZY_TYPE;
       var Memo = REACT_MEMO_TYPE;
       var Portal = REACT_PORTAL_TYPE;
@@ -661,7 +680,7 @@ function requireReactIs_development$1() {
       reactIs_development$1.ContextProvider = ContextProvider;
       reactIs_development$1.Element = Element;
       reactIs_development$1.ForwardRef = ForwardRef;
-      reactIs_development$1.Fragment = Fragment2;
+      reactIs_development$1.Fragment = Fragment;
       reactIs_development$1.Lazy = Lazy;
       reactIs_development$1.Memo = Memo;
       reactIs_development$1.Portal = Portal;
@@ -914,7 +933,7 @@ function requireReactIs_development() {
       var ContextProvider = REACT_PROVIDER_TYPE;
       var Element = REACT_ELEMENT_TYPE;
       var ForwardRef = REACT_FORWARD_REF_TYPE;
-      var Fragment2 = REACT_FRAGMENT_TYPE;
+      var Fragment = REACT_FRAGMENT_TYPE;
       var Lazy = REACT_LAZY_TYPE;
       var Memo = REACT_MEMO_TYPE;
       var Portal = REACT_PORTAL_TYPE;
@@ -982,7 +1001,7 @@ function requireReactIs_development() {
       reactIs_development.ContextProvider = ContextProvider;
       reactIs_development.Element = Element;
       reactIs_development.ForwardRef = ForwardRef;
-      reactIs_development.Fragment = Fragment2;
+      reactIs_development.Fragment = Fragment;
       reactIs_development.Lazy = Lazy;
       reactIs_development.Memo = Memo;
       reactIs_development.Portal = Portal;
@@ -1059,8 +1078,8 @@ function getDataSucceeded(pagination, data) {
   };
 }
 function useQueryParams() {
-  const [params, setParams] = useState(null);
-  useEffect(() => {
+  const [params, setParams] = React.useState(null);
+  React.useEffect(() => {
     const q = new Proxy(new URLSearchParams(window.location.search), {
       get: (queryParams, prop) => queryParams.get(prop.toString())
     });
@@ -1069,7 +1088,7 @@ function useQueryParams() {
   return { queryParams: params };
 }
 const getTranslation = (id) => `${PLUGIN_ID}.${id}`;
-const CustomItem = forwardRef(
+const CustomItem = React.forwardRef(
   ({ item, isOpacityEnabled, isDragging, style, ...props }, ref) => {
     const styles = {
       opacity: isOpacityEnabled ? "0.4" : "1",
@@ -1081,8 +1100,8 @@ const CustomItem = forwardRef(
     const ellipsis = (str, num = str.length, ellipsisStr = "...") => str.length >= num ? str.slice(0, num >= ellipsisStr.length ? num - ellipsisStr.length : num) + ellipsisStr : str;
     item.title = ellipsis(item.title ?? "", 100);
     item.subtitle = ellipsis(item.subtitle ?? "", 30);
-    return /* @__PURE__ */ jsx("div", { ref, style: styles, ...props, children: /* @__PURE__ */ jsx(
-      Box,
+    return /* @__PURE__ */ jsxRuntime.jsx("div", { ref, style: styles, ...props, children: /* @__PURE__ */ jsxRuntime.jsx(
+      designSystem.Box,
       {
         style: { zIndex: 10, cursor: "all-scroll", userSelect: "none" },
         background: "neutral0",
@@ -1090,23 +1109,23 @@ const CustomItem = forwardRef(
         shadow: "filterShadow",
         padding: 2,
         margin: 1,
-        children: /* @__PURE__ */ jsxs(Flex, { flexDirection: "row", alignItems: "center", gap: 4, children: [
-          /* @__PURE__ */ jsx(Drag, {}),
-          /* @__PURE__ */ jsx(Typography, { children: item.title })
+        children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Flex, { flexDirection: "row", alignItems: "center", gap: 4, children: [
+          /* @__PURE__ */ jsxRuntime.jsx(icons.Drag, {}),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { children: item.title })
         ] })
       }
     ) });
   }
 );
 const SortableListItem = ({ item, ...props }) => {
-  const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
+  const { attributes, isDragging, listeners, setNodeRef, transform, transition } = sortable.useSortable({
     id: item.id
   });
   const styles = {
-    transform: CSS.Transform.toString(transform),
+    transform: utilities.CSS.Transform.toString(transform),
     transition: transition || void 0
   };
-  return /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsxRuntime.jsx(
     CustomItem,
     {
       item,
@@ -1142,7 +1161,7 @@ function getTitle(entry, titleField, mainField) {
   return title?.toString();
 }
 const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }) => {
-  const { formatMessage } = useIntl();
+  const { formatMessage } = reactIntl.useIntl();
   let { title, subtitle, mainField } = settings;
   subtitle = subtitle ?? "";
   mainField = mainField ?? "";
@@ -1154,11 +1173,11 @@ const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }) => {
     };
   };
   const defaultItems = data.map((x) => convertDataItem(x));
-  const [items, setItems] = useState(defaultItems);
+  const [items, setItems] = React.useState(defaultItems);
   if (items.length !== defaultItems.length)
     setItems(defaultItems);
-  const [activeItem, setActiveItem] = useState();
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+  const [activeItem, setActiveItem] = React.useState();
+  const sensors = core.useSensors(core.useSensor(core.PointerSensor), core.useSensor(core.TouchSensor));
   const handleDragStart = (event) => {
     const { active } = event;
     setActiveItem(items.find((item) => item.id === active.id));
@@ -1175,7 +1194,7 @@ const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }) => {
     const activeIndex = items.findIndex((item) => item.id === active.id);
     const overIndex = items.findIndex((item) => item.id === over.id);
     if (activeIndex !== overIndex) {
-      setItems((prev) => arrayMove(prev, activeIndex, overIndex));
+      setItems((prev) => sortable.arrayMove(prev, activeIndex, overIndex));
     }
     setActiveItem(void 0);
     onSortEnd({ oldIndex: activeIndex, newIndex: overIndex });
@@ -1183,36 +1202,36 @@ const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }) => {
   const handleDragCancel = () => {
     setActiveItem(void 0);
   };
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(
-      DndContext,
+  return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntime.jsx("div", { style: { maxHeight: "800px", overflow: "auto" }, children: /* @__PURE__ */ jsxRuntime.jsx(
+      core.DndContext,
       {
         sensors,
-        collisionDetection: closestCenter,
+        collisionDetection: core.closestCenter,
         onDragStart: handleDragStart,
         onDragEnd: handleDragEnd,
         onDragCancel: handleDragCancel,
-        children: /* @__PURE__ */ jsx(SortableContext, { items, children: items.map((item) => /* @__PURE__ */ jsx(SortableListItem, { item }, item.id)) })
+        children: /* @__PURE__ */ jsxRuntime.jsx(sortable.SortableContext, { items, children: items.map((item) => /* @__PURE__ */ jsxRuntime.jsx(SortableListItem, { item }, item.id)) })
       }
-    ),
-    /* @__PURE__ */ jsx(Divider, { marginTop: 1, marginBottom: 0 }),
-    /* @__PURE__ */ jsx(Box, { padding: 1, children: /* @__PURE__ */ jsx(Button, { size: "S", disabled: hasMore ? true : false, onClick: onShowMore, children: formatMessage({ id: getTranslation("plugin.settings.sortableList.showMore") }) }) })
+    ) }),
+    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Divider, { marginTop: 1, marginBottom: 0 }),
+    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { padding: 1, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { size: "S", disabled: hasMore ? true : false, onClick: onShowMore, children: formatMessage({ id: getTranslation("plugin.settings.sortableList.showMore") }) }) })
   ] });
 };
 const SortMenu = ({ status, data, onSortEnd, onShowMore, hasMore, settings }) => {
-  const [visible, setVisible] = useState(false);
-  const buttonRef = React__default.useRef(null);
-  const togglePortal = React__default.useCallback(() => {
+  const [visible, setVisible] = React.useState(false);
+  const buttonRef = React__namespace.default.useRef(null);
+  const togglePortal = React__namespace.default.useCallback(() => {
     setVisible((prev) => !prev);
   }, []);
-  const handleClose = React__default.useCallback((event) => {
+  const handleClose = React__namespace.default.useCallback((event) => {
     if (event?.target?.id !== "drag-drop-content-type-plugin--sort-menu-button") {
       setVisible(false);
     }
   }, []);
-  return /* @__PURE__ */ jsx(React__default.Fragment, { children: /* @__PURE__ */ jsxs(Popover.Root, { children: [
-    /* @__PURE__ */ jsx(Popover.Trigger, { children: /* @__PURE__ */ jsx(
-      IconButton,
+  return /* @__PURE__ */ jsxRuntime.jsx(React__namespace.default.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Popover.Root, { children: [
+    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Popover.Trigger, { children: /* @__PURE__ */ jsxRuntime.jsx(
+      designSystem.IconButton,
       {
         id: "drag-drop-content-type-plugin--sort-menu-button",
         ref: buttonRef,
@@ -1221,16 +1240,16 @@ const SortMenu = ({ status, data, onSortEnd, onShowMore, hasMore, settings }) =>
         withTooltip: true,
         onClick: togglePortal,
         label: "Open Sort Menu",
-        children: /* @__PURE__ */ jsx(Drag, {})
+        children: /* @__PURE__ */ jsxRuntime.jsx(icons.Drag, {})
       }
     ) }),
-    /* @__PURE__ */ jsx(
-      Popover.Content,
+    /* @__PURE__ */ jsxRuntime.jsx(
+      designSystem.Popover.Content,
       {
         onEscapeKeyDown: handleClose,
         onPointerDownOutside: handleClose,
         style: { minWidth: "800px", marginRight: "16px", marginTop: "6px" },
-        children: /* @__PURE__ */ jsx(
+        children: /* @__PURE__ */ jsxRuntime.jsx(
           SortableList,
           {
             data,
@@ -1245,23 +1264,23 @@ const SortMenu = ({ status, data, onSortEnd, onShowMore, hasMore, settings }) =>
   ] }) });
 };
 const SortModal = () => {
-  const { get, post, put } = useFetchClient();
-  const [data, setData] = useState([]);
-  const [pagination, setPagination] = useState();
-  const [status, setStatus] = useState("loading");
-  const [mainField, setMainField] = useState("id");
-  const [uid, setUid] = useState(null);
-  const [settings, setSettings] = useState({
+  const { get, post, put } = admin.useFetchClient();
+  const [data, setData] = React.useState([]);
+  const [pagination, setPagination] = React.useState();
+  const [status, setStatus] = React.useState("loading");
+  const [mainField, setMainField] = React.useState("id");
+  const [uid, setUid] = React.useState(null);
+  const [settings, setSettings] = React.useState({
     rank: "",
     title: "",
     subtitle: "",
     mainField: null
   });
-  const [noEntriesFromNextPage, setNoEntriesFromNextPage] = useState(0);
+  const [noEntriesFromNextPage, setNoEntriesFromNextPage] = React.useState(0);
   const { queryParams } = useQueryParams();
   const dispatch = useDispatch();
-  const { toggleNotification } = useNotification();
-  const { formatAPIError } = useAPIErrorHandler();
+  const { toggleNotification } = admin.useNotification();
+  const { formatAPIError } = admin.useAPIErrorHandler();
   const paths = window.location.pathname.split("/");
   const contentTypePath = paths[paths.length - 1];
   const params = queryParams;
@@ -1270,11 +1289,8 @@ const SortModal = () => {
   const locale = params?.["plugins[i18n][locale]"];
   const listIncrementSize = pageSize ? pageSize / 2 : 1;
   const hasMore = noEntriesFromNextPage ? noEntriesFromNextPage + listIncrementSize >= data?.length - 1 : false;
-  const refetchEntries = React__default.useCallback(
-    () => dispatch(getData(uid, void 0)),
-    [dispatch]
-  );
-  const refetchEntriesSucceeded = React__default.useCallback(
+  const refetchEntries = React__namespace.default.useCallback(() => dispatch(getData(uid, void 0)), [dispatch]);
+  const refetchEntriesSucceeded = React__namespace.default.useCallback(
     (pagination2, newData) => {
       dispatch(getDataSucceeded(pagination2, newData));
     },
@@ -1312,14 +1328,14 @@ const SortModal = () => {
       const sortIndexParam = {
         contentType: contentTypePath,
         rankFieldName: settings.rank,
-        start: Math.max(
-          0,
-          (currentPage - 1) * pageSize - noEntriesFromNextPage
-        ),
+        start: Math.max(0, (currentPage - 1) * pageSize - noEntriesFromNextPage),
         limit: currentPage === 1 ? pageSize + noEntriesFromNextPage : pageSize + 2 * noEntriesFromNextPage,
         locale
       };
-      const results = await post(`/drag-drop-content-types/sort-index`, sortIndexParam);
+      const results = await post(
+        `/drag-drop-content-types/sort-index`,
+        sortIndexParam
+      );
       return results;
     }
   };
@@ -1359,7 +1375,7 @@ const SortModal = () => {
   const updateContentType = async (item) => {
     const { oldIndex, newIndex } = item;
     try {
-      const sortedList = arrayMoveImmutable(data, oldIndex, newIndex);
+      const sortedList = arrayMove.arrayMoveImmutable(data, oldIndex, newIndex);
       const rankUpdates = [];
       let rankHasChanged = false;
       for (let i = 0; i < sortedList.length; i++) {
@@ -1379,10 +1395,7 @@ const SortModal = () => {
         contentType: contentTypePath,
         updates: rankUpdates
       });
-      let sortedListViewEntries = currentPage == 1 ? sortedList.slice(0, pageSize) : sortedList.length < pageSize ? sortedList.slice(noEntriesFromNextPage, sortedList.length) : sortedList.slice(
-        noEntriesFromNextPage,
-        pageSize + noEntriesFromNextPage
-      );
+      let sortedListViewEntries = currentPage == 1 ? sortedList.slice(0, pageSize) : sortedList.length < pageSize ? sortedList.slice(noEntriesFromNextPage, sortedList.length) : sortedList.slice(noEntriesFromNextPage, pageSize + noEntriesFromNextPage);
       setData(sortedList);
       setStatus("success");
       afterUpdate(sortedListViewEntries, pagination);
@@ -1403,25 +1416,25 @@ const SortModal = () => {
   const showMoreHandler = () => {
     setNoEntriesFromNextPage(noEntriesFromNextPage + listIncrementSize);
   };
-  useEffect(() => {
+  React.useEffect(() => {
     fetchContentTypeConfig();
   }, []);
-  useEffect(() => {
+  React.useEffect(() => {
     fetchSettings();
   }, [mainField]);
-  useEffect(() => {
+  React.useEffect(() => {
     if (settings?.rank) {
       initializeContentType();
     }
   }, [settings]);
-  useEffect(() => {
+  React.useEffect(() => {
     if (settings?.rank && pageSize && currentPage) {
       fetchContentType();
     }
   }, [noEntriesFromNextPage, locale, pageSize, currentPage, settings]);
   return (
     // <CheckPermissions permissions={pluginPermissions.main}>
-    /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsxRuntime.jsx(
       SortMenu,
       {
         data,
@@ -1463,7 +1476,7 @@ const index = {
           },
           id: "settings",
           to: `${PLUGIN_ID}`,
-          Component: () => import("./Settings-gWqOcSLt.mjs")
+          Component: () => Promise.resolve().then(() => require("./Settings-CCmyLtnw.js"))
         }
       ]
     );
@@ -1484,7 +1497,7 @@ const index = {
     const { locales } = app;
     const importedTranslations = await Promise.all(
       locales.map((locale) => {
-        return __variableDynamicImportRuntimeHelper(/* @__PURE__ */ Object.assign({ "./translations/en.json": () => import("./en-bxpER_P-.mjs"), "./translations/fr.json": () => import("./fr-hkSxFuzl.mjs") }), `./translations/${locale}.json`).then(({ default: data }) => {
+        return __variableDynamicImportRuntimeHelper(/* @__PURE__ */ Object.assign({ "./translations/en.json": () => Promise.resolve().then(() => require("./en-CjpIfZCZ.js")) }), `./translations/${locale}.json`).then(({ default: data }) => {
           return {
             data: prefixPluginTranslations(data, PLUGIN_ID),
             locale
@@ -1500,8 +1513,6 @@ const index = {
     return importedTranslations;
   }
 };
-export {
-  getTranslation as g,
-  index as i
-};
-//# sourceMappingURL=index-xS9IjaUq.mjs.map
+exports.getTranslation = getTranslation;
+exports.index = index;
+//# sourceMappingURL=index-t6drXiAS.js.map

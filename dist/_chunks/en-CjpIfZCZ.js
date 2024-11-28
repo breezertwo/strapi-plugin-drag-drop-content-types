@@ -26,7 +26,7 @@ const en = {
   "plugin.settings.subtitle.hint": "Optionally select a second subtitle field to show up attached to the title in the drag drop menu. Leave blank to not show a subtitle.",
   "plugin.settings.subtitle.tooltip": "Field that will show up in the drag drop menu attached to title",
   "plugin.settings.subtitle.placeholder": "Subtitle",
-  "plugin.settings.sortableList.showMore": "Show more"
+  "plugin.settings.sortableList.showMore": "Load more"
 };
 exports.default = en;
-//# sourceMappingURL=en-I3-CH3Sy.js.map
+//# sourceMappingURL=en-CjpIfZCZ.js.map

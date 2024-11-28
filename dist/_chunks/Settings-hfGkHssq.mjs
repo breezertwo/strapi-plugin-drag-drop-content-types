@@ -5,7 +5,7 @@ import { useFetchClient, useNotification, Layouts, Page } from "@strapi/strapi/a
 import { IconButton, Box, Typography, Field, Flex, TextInput, Toggle, Button, Grid } from "@strapi/design-system";
 import { Information, Check } from "@strapi/icons";
 import { useIntl } from "react-intl";
-import { g as getTranslation } from "./index-xS9IjaUq.mjs";
+import { g as getTranslation } from "./index-BejRo512.mjs";
 import * as ReactDOM from "react-dom";
 import ReactDOM__default, { flushSync } from "react-dom";
 function _extends() {
@@ -3625,4 +3625,4 @@ const Settings = () => {
 export {
   Settings as default
 };
-//# sourceMappingURL=Settings-gWqOcSLt.mjs.map
+//# sourceMappingURL=Settings-hfGkHssq.mjs.map

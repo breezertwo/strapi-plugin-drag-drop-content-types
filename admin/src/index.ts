@@ -1,16 +1,11 @@
-import { getTranslation } from './utils/getTranslation';
 import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
-import { PluginIcon } from './components/PluginIcon';
 import SortModal from './components/SortModal';
 import pluginPermissions from './permissions';
 
 type TradOptions = Record<string, string>;
 
-const prefixPluginTranslations = (
-  trad: TradOptions,
-  pluginId: string
-): TradOptions => {
+const prefixPluginTranslations = (trad: TradOptions, pluginId: string): TradOptions => {
   if (!pluginId) {
     throw new TypeError("pluginId can't be empty");
   }
@@ -22,7 +17,6 @@ const prefixPluginTranslations = (
 
 export default {
   register(app: any) {
-
     app.createSettingSection(
       {
         id: PLUGIN_ID,
@@ -40,7 +34,7 @@ export default {
           },
           id: 'settings',
           to: `${PLUGIN_ID}`,
-          Component:() => import('./pages/Settings'),
+          Component: () => import('./pages/Settings'),
         },
       ]
     );
@@ -68,8 +62,8 @@ export default {
   },
 
   bootstrap(app: any) {
-    app.getPlugin('content-manager').injectComponent("listView", "actions", {
-      name: "sort-component",
+    app.getPlugin('content-manager').injectComponent('listView', 'actions', {
+      name: 'sort-component',
       Component: SortModal,
     });
   },
@@ -97,5 +91,4 @@ export default {
 
     return importedTranslations;
   },
-
 };

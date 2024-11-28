@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { GetPageEntriesResponse, SortableListProps } from './types';
 import { Divider, Button, Box } from '@strapi/design-system';
 import { useIntl } from 'react-intl';
@@ -18,7 +18,6 @@ import { arrayMove, SortableContext } from '@dnd-kit/sortable';
 import SortableListItem from './SortableListItem';
 import { getSubtitle, getTitle } from './utils';
 import { TItem } from './CustomItem';
-import { Typography } from '@strapi/design-system';
 
 const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }: SortableListProps) => {
   const { formatMessage } = useIntl();
@@ -78,19 +77,21 @@ const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }: Sortab
 
   return (
     <>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
-      >
-        <SortableContext items={items}>
-          {items.map((item) => (
-            <SortableListItem key={item.id} item={item} />
-          ))}
-        </SortableContext>
-      </DndContext>
+      <div style={{ maxHeight: '800px', overflow: 'auto' }}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext items={items}>
+            {items.map((item) => (
+              <SortableListItem key={item.id} item={item} />
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
       <Divider marginTop={1} marginBottom={0} />
       <Box padding={1}>
         <Button size="S" disabled={hasMore ? true : false} onClick={onShowMore}>
