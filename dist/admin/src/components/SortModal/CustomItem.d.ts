@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes } from 'react';
 export type TItem = {
     id: number;
     title: string;
