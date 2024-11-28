@@ -1,6 +1,6 @@
 {
-  "name": "@cslegany/drag-drop-content-types-strapi5",
-  "version": "0.5.1",
+  "name": "@breezertwo/strapi-plugin-drag-drop-content-types",
+  "version": "5.0.0",
   "description": "This plugin add a drag and droppable list that allows you to sort content type entries.",
   "strapi": {
     "kind": "plugin",
@@ -82,15 +82,15 @@
     "styled-components": "^6.1.13"
   },
   "author": {
-    "name": "cslegany <cslegany@synerinsoft.com>",
-    "email": "cslegany@synerinsoft.com",
-    "url": "https://synerinsoft.com/"
+    "name": "breezertwo <andreas@heynanny.com>",
+    "email": "andreas@heynanny.com",
+    "url": "https://heynanny.com/"
   },
   "maintainers": [
     {
-      "name": "https://synerinsoft.com/",
-      "email": "cslegany@synerinsoft.com",
-      "url": "https://synerinsoft.com/"
+      "name": "https://heynanny.com/",
+      "email": "andreas@synerinsoft.com",
+      "url": "https://heynanny.com/"
     }
   ]
 }
