@@ -54,10 +54,9 @@ export interface FetchedSettings {
   rank: string;
   title: string;
   subtitle: string | null;
-  mainField: string | null;
 }
 
-export interface UpdateContentTypeParams {
+export interface UpdateContentRanksParams {
   oldIndex: number;
   newIndex: number;
 }

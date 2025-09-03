@@ -26,7 +26,7 @@ const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
         ref={ref}
         style={{
           ...style,
-          border: isSelected ? '2px solid orange' : '2px solid transparent',
+          border: isSelected ? '2px solid #ac73e6' : '2px solid transparent',
         }}
         background={isDragging ? '#62629d' : '#27273f'}
         cursor={isDragging ? 'grabbing' : 'grab'}

@@ -1,15 +1,13 @@
 import { arrayMoveImmutable } from 'array-move';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFetchClient, useNotification, useAPIErrorHandler } from '@strapi/strapi/admin';
 import { useQueryParams } from '../../utils/useQueryParams';
 import type {
   ContentTypeConfigResponse,
-  ContentTypeResponse,
   FetchedSettings,
   GetPageEntriesResponse,
   QueryParams,
-  UpdateContentTypeParams,
-  MoveDirection,
+  UpdateContentRanksParams,
 } from './types';
 import type { PluginSettingsResponse } from '../../../../server/src/services/settings';
 import SortMenu from './SortMenu';
@@ -19,38 +17,32 @@ const SortModal = () => {
 
   const [data, setData] = useState<GetPageEntriesResponse[]>([]);
   const [status, setStatus] = useState('loading');
-  const [mainField, setMainField] = useState('id');
-  const [uid, setUid] = useState<string | null>(null);
+
   const [settings, setSettings] = useState<FetchedSettings>({
     rank: '',
     title: '',
     subtitle: '',
-    mainField: null,
   });
 
   const { queryParams } = useQueryParams();
   const { toggleNotification } = useNotification();
   const { formatAPIError } = useAPIErrorHandler();
 
-  // Get content type from url
   const paths = window.location.pathname.split('/');
-  const contentTypePath = paths[paths.length - 1];
+  const contentType = paths[paths.length - 1];
 
   const params = queryParams as unknown as QueryParams;
   const locale = params?.['plugins[i18n][locale]'];
 
-  // Fetch content type config settings
-  const fetchContentTypeConfig = async () => {
-    // TODO: tie this in with middleware with the request that is already being made on page load
+  const fetchContentTypeMainField = async () => {
     try {
       const { data } = await get<ContentTypeConfigResponse>(
-        `/content-manager/content-types/${contentTypePath}/configuration`
+        `/content-manager/content-types/${contentType}/configuration`
       );
-      const settings = data.data.contentType?.settings;
-      setMainField(settings.mainField);
-      setUid(data.data.contentType?.uid);
+      return data.data.contentType?.settings.mainField;
     } catch (e) {
-      console.log(e);
+      console.error(e);
+      return 'error: could not get mainField title';
     }
   };
 
@@ -58,39 +50,39 @@ const SortModal = () => {
   const fetchSettings = async () => {
     try {
       const { data } = await get<PluginSettingsResponse>(`/drag-drop-content-types/settings`);
+
       let fetchedSettings = {
         rank: data.body.rank,
-        title: data.body.title?.length > 0 ? data.body.title : mainField,
+        title: data.body.title,
         subtitle: data.body.subtitle?.length > 0 ? data.body.subtitle : null,
-        mainField,
       };
+
+      if (fetchedSettings.title.length === 0) {
+        fetchedSettings.title = await fetchContentTypeMainField();
+      }
+
       setSettings(fetchedSettings);
     } catch (e) {
       console.log(e);
     }
   };
 
-  // Fetch all entries from the sort controller
-  const getAllEntries = async () => {
-    const sortIndexParam = new URLSearchParams({
-      contentType: contentTypePath,
-      locale: locale,
-    });
-
-    const results = await get<GetPageEntriesResponse[]>(
-      `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`
-    );
-    return results;
-  };
-
-  // Fetch data from the database
-  const fetchContentType = async () => {
+  const fetchContentList = async () => {
     try {
-      const entries = await getAllEntries();
-      if (entries?.data?.length) {
-        setStatus('success');
-        setData(entries.data);
+      const sortIndexParam = new URLSearchParams({
+        contentType,
+        locale: locale,
+      });
+
+      const result = await get<GetPageEntriesResponse[]>(
+        `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`
+      );
+
+      if (result?.data?.length) {
+        setData(result.data);
       }
+
+      setStatus('success');
     } catch (e) {
       console.log('Could not fetch content type', e);
       setStatus('error');
@@ -98,13 +90,12 @@ const SortModal = () => {
   };
 
   // Update all ranks
-  const updateContentType = async (item: UpdateContentTypeParams) => {
+  const updateContentRanks = async (item: UpdateContentRanksParams) => {
     const { oldIndex, newIndex } = item;
 
     if (oldIndex === newIndex) return;
 
     try {
-      // Increase performance by breaking loop after last element having a rank change is updated
       const sortedList = arrayMoveImmutable(data, oldIndex, newIndex);
       const rankUpdates = [];
       let rankHasChanged = false;
@@ -137,12 +128,10 @@ const SortModal = () => {
         }
       }
 
-      // Set the updated data immediately for UI
       setData(updatedSortedList);
 
-      // Batch Update DB with new ranks
       await put('/drag-drop-content-types/batch-update', {
-        contentType: contentTypePath,
+        contentType,
         updates: rankUpdates,
       });
 
@@ -157,33 +146,24 @@ const SortModal = () => {
     }
   };
 
-  // Fetch content-type on page render
-  useEffect(() => {
-    fetchContentTypeConfig();
-  }, []);
-
-  // Fetch settings when mainField changes
   useEffect(() => {
     fetchSettings();
-  }, [mainField]);
+  }, []);
 
-  // Update menu when settings change
   useEffect(() => {
     if (settings?.rank) {
-      fetchContentType();
+      fetchContentList();
     }
-  }, [locale, settings]);
+  }, [locale, settings?.rank]);
 
   return (
-    // <CheckPermissions permissions={pluginPermissions.main}>
     <SortMenu
       data={data}
       status={status}
-      onOpen={fetchContentType}
-      onSortEnd={updateContentType}
+      onOpen={fetchContentList}
+      onSortEnd={updateContentRanks}
       settings={settings}
     />
-    // </CheckPermissions>
   );
 };
 

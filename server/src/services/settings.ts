@@ -40,6 +40,11 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     if (!config) {
       config = await createDefaultConfig();
     }
+
+    const settingService = strapi.plugin('drag-drop-content-types').service('settings');
+    const cm = strapi.plugin('content-manager').service('content-types');
+
+    console.log('Settings:', JSON.stringify(cm, null, 2));
     return config;
   },
 

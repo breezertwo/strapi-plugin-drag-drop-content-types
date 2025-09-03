@@ -22,30 +22,23 @@ const SortableList = ({
   selectedItemId,
   onItemSelect,
 }: SortableListProps) => {
-  let { title, subtitle, mainField } = settings;
-  subtitle = subtitle ?? '';
-  mainField = mainField ?? '';
+  let { title, subtitle } = settings;
 
   const convertDataItem = (pageEntry: GetPageEntriesResponse) => {
     return {
       ...pageEntry,
-      title: getTitle(pageEntry, title, mainField),
-      subtitle: getSubtitle(pageEntry, subtitle, title),
+      title: getTitle(pageEntry, title),
+      subtitle: getSubtitle(pageEntry, subtitle ?? '', title),
     };
   };
 
   const [items, setItems] = useState<TItem[]>([]);
 
-  // Update items when data prop changes
   useEffect(() => {
     const convertedItems = data.map((x) => convertDataItem(x));
     setItems(convertedItems);
-  }, [data, title, subtitle, mainField]);
+  }, [data, title, subtitle]);
 
-  // for drag overlay
-  const [activeItem, setActiveItem] = useState<TItem>();
-
-  // for input methods detection
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -55,21 +48,13 @@ const SortableList = ({
     useSensor(TouchSensor)
   );
 
-  // triggered when dragging starts
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    setActiveItem(items.find((item) => item.id === active.id));
-  };
-
-  // triggered when dragging ends
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
 
-    const activeItem = items.find((item) => item.id === active.id);
     const overItem = items.find((item) => item.id === over.id);
 
-    if (!activeItem || !overItem) {
+    if (!overItem) {
       return;
     }
 
@@ -80,22 +65,11 @@ const SortableList = ({
       setItems((prev) => arrayMove<TItem>(prev, activeIndex, overIndex));
     }
 
-    setActiveItem(undefined);
     onSortEnd({ oldIndex: activeIndex, newIndex: overIndex });
   };
 
-  const handleDragCancel = () => {
-    setActiveItem(undefined);
-  };
-
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={items}>
         {items.map((item) => (
           <SortableListItem

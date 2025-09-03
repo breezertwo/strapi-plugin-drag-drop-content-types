@@ -29,12 +29,6 @@ export function getSubtitle(
   }
 }
 
-export function getTitle(
-  entry: any,
-  titleField: string,
-  mainField: string,
-  ellipsisCount?: number
-) {
-  const title = entry[titleField] ? entry[titleField] : entry[mainField];
-  return ellipsis(title?.toString() ?? '', ellipsisCount ?? 200);
+export function getTitle(entry: any, titleField: string, ellipsisCount?: number) {
+  return ellipsis(entry[titleField]?.toString() ?? '', ellipsisCount ?? 200);
 }
