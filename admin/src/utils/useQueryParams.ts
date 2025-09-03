@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
 
-/**
- *
- * @returns {Object} | {}}
- */
 export function useQueryParams() {
   const [params, setParams] = useState<URLSearchParams | null>(null);
 

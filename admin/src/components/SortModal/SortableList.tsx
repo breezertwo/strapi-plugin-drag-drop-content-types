@@ -1,9 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GetPageEntriesResponse, SortableListProps } from './types';
-import { Divider, Button, Box } from '@strapi/design-system';
-import { useIntl } from 'react-intl';
-import { getTranslation as getTrad } from '../../utils/getTranslation';
-
 import {
   DndContext,
   PointerSensor,
@@ -19,9 +15,13 @@ import SortableListItem from './SortableListItem';
 import { getSubtitle, getTitle } from './utils';
 import { TItem } from './CustomItem';
 
-const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }: SortableListProps) => {
-  const { formatMessage } = useIntl();
-
+const SortableList = ({
+  data,
+  settings,
+  onSortEnd,
+  selectedItemId,
+  onItemSelect,
+}: SortableListProps) => {
   let { title, subtitle, mainField } = settings;
   subtitle = subtitle ?? '';
   mainField = mainField ?? '';
@@ -33,15 +33,27 @@ const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }: Sortab
       subtitle: getSubtitle(pageEntry, subtitle, title),
     };
   };
-  const defaultItems = data.map((x) => convertDataItem(x));
-  const [items, setItems] = useState<TItem[]>(defaultItems);
-  if (items.length !== defaultItems.length) setItems(defaultItems);
+
+  const [items, setItems] = useState<TItem[]>([]);
+
+  // Update items when data prop changes
+  useEffect(() => {
+    const convertedItems = data.map((x) => convertDataItem(x));
+    setItems(convertedItems);
+  }, [data, title, subtitle, mainField]);
 
   // for drag overlay
   const [activeItem, setActiveItem] = useState<TItem>();
 
   // for input methods detection
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor)
+  );
 
   // triggered when dragging starts
   const handleDragStart = (event: DragStartEvent) => {
@@ -67,6 +79,7 @@ const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }: Sortab
     if (activeIndex !== overIndex) {
       setItems((prev) => arrayMove<TItem>(prev, activeIndex, overIndex));
     }
+
     setActiveItem(undefined);
     onSortEnd({ oldIndex: activeIndex, newIndex: overIndex });
   };
@@ -76,29 +89,25 @@ const SortableList = ({ data, onShowMore, hasMore, settings, onSortEnd }: Sortab
   };
 
   return (
-    <>
-      <div style={{ maxHeight: '800px', overflow: 'auto' }}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <SortableContext items={items}>
-            {items.map((item) => (
-              <SortableListItem key={item.id} item={item} />
-            ))}
-          </SortableContext>
-        </DndContext>
-      </div>
-      <Divider marginTop={1} marginBottom={0} />
-      <Box padding={1}>
-        <Button size="S" disabled={hasMore ? true : false} onClick={onShowMore}>
-          {formatMessage({ id: getTrad('plugin.settings.sortableList.showMore') })}
-        </Button>
-      </Box>
-    </>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <SortableContext items={items}>
+        {items.map((item) => (
+          <SortableListItem
+            key={item.id}
+            item={item}
+            settings={settings}
+            isSelected={selectedItemId === item.id}
+            onSelectItem={onItemSelect}
+          />
+        ))}
+      </SortableContext>
+    </DndContext>
   );
 };
 

@@ -1,41 +1,35 @@
 import type { Core } from '@strapi/strapi';
 import type * as StrapiTypes from '@strapi/types/dist';
-import { PluginSettingsResponse, RankUpdate } from '../../../typings';
+import type z from 'zod';
+import type { PluginSettingsResponse } from './settings';
+import type { SortIndexRequestSchema } from '../controllers/dragdrop';
+
+export interface SortIndexParams extends z.infer<typeof SortIndexRequestSchema> {
+  rankFieldName: string;
+}
+
+export interface RankUpdate {
+  id: number;
+  rank: number;
+}
 
 const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
-  getWelcomeMessage() {
-    return {
-      body: 'Welcome to Strapi 🚀',
-    };
-  },
-
-  async sortIndex(
-    contentType: StrapiTypes.UID.CollectionType,
-    start: number,
-    limit: number,
-    locale: string,
-    rankFieldName: string
-  ) {
+  async sortIndex({ contentType, rankFieldName, locale }: SortIndexParams) {
     let indexData = {
-      sort: {},
       populate: '*',
-      start: start,
-      limit: limit,
       locale: locale,
+      sort: [`${rankFieldName}:asc`],
     };
-    indexData.sort[rankFieldName] = 'asc';
+
     try {
-      return await strapi.documents(contentType).findMany(indexData);
+      return await strapi
+        .documents(contentType as StrapiTypes.UID.CollectionType)
+        .findMany(indexData);
     } catch (err) {
       return {};
     }
   },
 
-  /**
-   *
-   * @param {RankUpdate[]} updates
-   * @param {StrapiTypes.UID.CollectionType} contentType
-   */
   async batchUpdate(
     config: PluginSettingsResponse,
     updates: RankUpdate[],
@@ -44,8 +38,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
     const shouldTriggerWebhooks = config.body.triggerWebhooks;
     const sortFieldName = config.body.rank;
     const results = [];
-
-    strapi['apiUpdate'] = true;
 
     for (const update of updates) {
       const allLocalizations = await strapi.db.query(contentType).findOne({
@@ -68,7 +60,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
       }
 
       // Trigger webhook listener for updated entry
-      //see: https://forum.strapi.io/t/trigger-webhook-event-from-api/35919/5
       if (shouldTriggerWebhooks) {
         const info: Record<string, unknown> = {
           model: contentType.split('.').at(-1),
@@ -84,8 +75,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
         });
       }
     }
-
-    strapi['apiUpdate'] = undefined;
 
     return results.map((entry) => ({
       id: entry.id,

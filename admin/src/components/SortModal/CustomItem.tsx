@@ -2,53 +2,54 @@ import { Flex } from '@strapi/design-system';
 import { Box, Grid, Typography } from '@strapi/design-system';
 import { Drag } from '@strapi/icons';
 import { CSSProperties, forwardRef, HTMLAttributes } from 'react';
+import { FetchedSettings } from './types';
 
 export type TItem = {
   id: number;
   title: string;
   subtitle: string;
+  [key: string]: any;
 };
 
 type CustomItemProps = {
   item: TItem;
-  isOpacityEnabled?: boolean;
+  settings: FetchedSettings;
   isDragging?: boolean;
+  isSelected?: boolean;
+  onPressItem?: (id: number) => void;
 } & HTMLAttributes<HTMLDivElement>;
 
 const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
-  ({ item, isOpacityEnabled, isDragging, style, ...props }, ref) => {
-    const styles: CSSProperties = {
-      opacity: isOpacityEnabled ? '0.4' : '1',
-      cursor: isDragging ? 'grabbing' : 'grab',
-      lineHeight: '0.5',
-      transform: isDragging ? 'scale(1.05)' : 'scale(1)',
-      ...style,
-    };
-
-    const ellipsis = (str: string, num: number = str.length, ellipsisStr = '...') =>
-      str.length >= num
-        ? str.slice(0, num >= ellipsisStr.length ? num - ellipsisStr.length : num) + ellipsisStr
-        : str;
-
-    item.title = ellipsis(item.title ?? '', 100);
-    item.subtitle = ellipsis(item.subtitle ?? '', 30);
-
+  ({ item, isDragging, style, isSelected, onPressItem, settings, ...props }, ref) => {
     return (
-      <div ref={ref} style={styles} {...props}>
-        <Box
-          style={{ zIndex: 10, cursor: 'all-scroll', userSelect: 'none' }}
-          background="neutral0"
-          hasRadius
-          shadow="filterShadow"
-          padding={2}
-          margin={1}
-        >
-          <Flex flexDirection="row" alignItems="center" gap={4}>
-            <Drag />
+      <Box
+        ref={ref}
+        style={{
+          ...style,
+          border: isSelected ? '2px solid orange' : '2px solid transparent',
+        }}
+        background={isDragging ? '#62629d' : '#27273f'}
+        cursor={isDragging ? 'grabbing' : 'grab'}
+        transform={isDragging ? 'scale(1.05)' : 'scale(1)'}
+        zIndex={isDragging ? 1000 : 1}
+        lineHeight="0.5"
+        hasRadius
+        shadow="filterShadow"
+        padding={2}
+        margin={1}
+        {...props}
+      >
+        <Flex direction="row" alignItems="center" gap={4}>
+          <Drag />
+          <Typography fontSize="13px" variant="sigma">
+            #{item[settings.rank] + 1}
+          </Typography>
+          <Flex direction="column" gap={2} alignItems="flex-start">
             <Typography>{item.title}</Typography>
+            {item.subtitle && <Typography variant="pi">{item.subtitle}</Typography>}
           </Flex>
-        </Box>
-      </div>
+        </Flex>
+      </Box>
     );
   }
 );

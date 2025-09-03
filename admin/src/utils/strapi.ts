@@ -1,4 +1,4 @@
-import { GetPageEntriesResponse, Pagination } from "../components/SortModal/types";
+import { GetPageEntriesResponse } from '../components/SortModal/types';
 
 export const GET_DATA = 'ContentManager/ListView/GET_DATA';
 export const GET_DATA_SUCCEEDED = 'ContentManager/ListView/GET_DATA_SUCCEEDED';
@@ -11,7 +11,7 @@ export function getData(uid: any, params: any) {
   };
 }
 
-export function getDataSucceeded(pagination: Pagination, data: GetPageEntriesResponse[]) {
+export function getDataSucceeded(pagination: any, data: GetPageEntriesResponse[]) {
   return {
     type: GET_DATA_SUCCEEDED,
     pagination,
