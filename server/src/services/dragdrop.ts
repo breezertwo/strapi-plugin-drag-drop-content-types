@@ -1,41 +1,92 @@
 import type { Core } from '@strapi/strapi';
 import type * as StrapiTypes from '@strapi/types/dist';
-import { PluginSettingsResponse, RankUpdate } from '../../../typings';
+import type z from 'zod';
+import type { PluginSettingsResponse } from './settings';
+import type { SortIndexRequestSchema } from '../controllers/dragdrop';
+
+export interface SortIndexParams extends z.infer<typeof SortIndexRequestSchema> {
+  rankFieldName: string;
+}
+
+export interface PlaceholderItem {
+  id: number;
+  isPlaceholder: true;
+  sourceLocale: string;
+  [key: string]: any;
+}
+
+export interface SortIndexItem {
+  id: number;
+  isPlaceholder?: boolean;
+  sourceLocale?: string;
+  [key: string]: any;
+}
+
+export interface RankUpdate {
+  id: number;
+  rank: number;
+}
+
+type ContentQueryResponse = { locale: string; id: string; documentId: string };
 
 const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
-  getWelcomeMessage() {
-    return {
-      body: 'Welcome to Strapi 🚀',
-    };
-  },
-
-  async sortIndex(
-    contentType: StrapiTypes.UID.CollectionType,
-    start: number,
-    limit: number,
-    locale: string,
-    rankFieldName: string
-  ) {
-    let indexData = {
-      sort: {},
-      populate: '*',
-      start: start,
-      limit: limit,
-      locale: locale,
-    };
-    indexData.sort[rankFieldName] = 'asc';
+  async sortIndex({ contentType, rankFieldName, locale }: SortIndexParams) {
     try {
-      return await strapi.documents(contentType).findMany(indexData);
+      // Get all available locales for this content type
+      const allLocalizations = (await strapi.db.query(contentType).findMany({
+        where: {
+          publishedAt: {
+            $eq: null,
+          },
+        },
+      })) as ContentQueryResponse[];
+
+      // Group by locale
+      const localeGroups = allLocalizations.reduce<{ [locale: string]: ContentQueryResponse[] }>(
+        (acc, item) => {
+          const { locale } = item;
+          if (!acc[locale]) {
+            acc[locale] = [];
+          }
+          acc[locale].push(item);
+          return acc;
+        },
+        {}
+      );
+
+      // Get current locale items as a map for quick lookup
+      const currentItemsMap = new Map();
+      localeGroups[locale].forEach((item: any) => {
+        currentItemsMap.set(item.documentId, item);
+      });
+
+      // Find all unique items across locales
+      const allUniqueItems = currentItemsMap;
+      Object.entries(localeGroups).forEach(([localeKey, items]) => {
+        items.forEach((item: any) => {
+          if (!allUniqueItems.has(item.documentId)) {
+            allUniqueItems.set(item.documentId, {
+              ...item,
+              sourceLocale: localeKey,
+              isPlaceholder: true,
+            });
+          }
+        });
+      });
+
+      const sortedAllItems = Array.from(allUniqueItems.values()).sort((a, b) => {
+        const rankA = a[rankFieldName] ?? Infinity;
+        const rankB = b[rankFieldName] ?? Infinity;
+        return rankA - rankB;
+      });
+
+      return sortedAllItems;
     } catch (err) {
-      return {};
+      console.error('Error in sortIndex:', err);
+      return [];
     }
   },
 
-  /**
-   *
-   * @param {RankUpdate[]} updates
-   * @param {StrapiTypes.UID.CollectionType} contentType
-   */
   async batchUpdate(
     config: PluginSettingsResponse,
     updates: RankUpdate[],
@@ -44,8 +95,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
     const shouldTriggerWebhooks = config.body.triggerWebhooks;
     const sortFieldName = config.body.rank;
     const results = [];
-
-    strapi['apiUpdate'] = true;
 
     for (const update of updates) {
       const allLocalizations = await strapi.db.query(contentType).findOne({
@@ -68,7 +117,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
       }
 
       // Trigger webhook listener for updated entry
-      //see: https://forum.strapi.io/t/trigger-webhook-event-from-api/35919/5
       if (shouldTriggerWebhooks) {
         const info: Record<string, unknown> = {
           model: contentType.split('.').at(-1),
@@ -84,8 +132,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
         });
       }
     }
-
-    strapi['apiUpdate'] = undefined;
 
     return results.map((entry) => ({
       id: entry.id,

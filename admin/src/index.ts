@@ -1,19 +1,6 @@
 import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
 import SortModal from './components/SortModal';
-import pluginPermissions from './permissions';
-
-type TradOptions = Record<string, string>;
-
-const prefixPluginTranslations = (trad: TradOptions, pluginId: string): TradOptions => {
-  if (!pluginId) {
-    throw new TypeError("pluginId can't be empty");
-  }
-  return Object.keys(trad).reduce((acc, current) => {
-    acc[`${pluginId}.${current}`] = trad[current];
-    return acc;
-  }, {} as TradOptions);
-};
 
 export default {
   register(app: any) {
@@ -24,7 +11,7 @@ export default {
           id: `${PLUGIN_ID}.plugin.name`,
           defaultMessage: 'Drag Drop Content Types',
         },
-        permissions: pluginPermissions.main,
+        permissions: [{ action: 'plugin::drag-drop-content-types.settings', subject: null }],
       },
       [
         {
@@ -35,23 +22,10 @@ export default {
           id: 'settings',
           to: `${PLUGIN_ID}`,
           Component: () => import('./pages/Settings'),
+          permissions: [{ action: 'plugin::drag-drop-content-types.settings', subject: null }],
         },
       ]
     );
-
-    // app.addMenuLink({
-    //   to: `plugins/${PLUGIN_ID}`,
-    //   icon: PluginIcon,
-    //   intlLabel: {
-    //     id: `${PLUGIN_ID}.plugin.name`,
-    //     defaultMessage: PLUGIN_ID,
-    //   },
-    //   Component: async () => {
-    //     const { App } = await import('./pages/App');
-
-    //     return App;
-    //   },
-    // });
 
     app.registerPlugin({
       id: PLUGIN_ID,
@@ -70,9 +44,8 @@ export default {
 
   async registerTrads(app: any) {
     const { locales } = app;
-
     const importedTranslations = await Promise.all(
-      (locales as string[]).map((locale) => {
+      (locales as string[]).map(async (locale) => {
         return import(`./translations/${locale}.json`)
           .then(({ default: data }) => {
             return {
@@ -91,4 +64,15 @@ export default {
 
     return importedTranslations;
   },
+};
+
+type TradOptions = Record<string, string>;
+const prefixPluginTranslations = (trad: TradOptions, pluginId: string): TradOptions => {
+  if (!pluginId) {
+    throw new TypeError("pluginId can't be empty");
+  }
+  return Object.keys(trad).reduce((acc, current) => {
+    acc[`${pluginId}.${current}`] = trad[current];
+    return acc;
+  }, {} as TradOptions);
 };
