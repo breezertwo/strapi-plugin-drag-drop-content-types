@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext } from '@dnd-kit/sortable';
 import SortableListItem from './SortableListItem';
-import { getSubtitle, getTitle } from './utils';
+import { getSubtitle, getTitle } from '../../utils/title-transform';
 import { TItem } from './CustomItem';
 
 const SortableList = ({

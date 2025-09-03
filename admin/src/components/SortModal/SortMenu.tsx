@@ -83,11 +83,8 @@ const SortMenu = ({ status, data, onSortEnd, settings }: SortMenuProps) => {
           />
         </Box>
         <Modal.Footer>
-          <Flex justifyContent="space-between" width="100%">
-            <Modal.Close>
-              <Button variant="tertiary">Cancel</Button>
-            </Modal.Close>
-            {selectedItemId && (
+          <Flex justifyContent="flex-end" width="100%" minHeight="32px">
+            {selectedItemId && selectedItemId !== -1 && (
               <Flex gap={2}>
                 <Button
                   variant="secondary"

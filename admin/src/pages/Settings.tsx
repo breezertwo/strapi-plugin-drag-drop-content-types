@@ -115,9 +115,9 @@ const Settings = () => {
             paddingLeft={7}
             paddingRight={7}
           >
-            <Flex size={3} direction="column">
+            <Flex direction="column">
               <Box paddingBottom={6}>
-                <Typography variant="beta" as="h2">
+                <Typography variant="beta">
                   {formatMessage({ id: getTrad('plugin.settings.field-names') })}
                 </Typography>
               </Box>
