@@ -30,5 +30,10 @@ export function getSubtitle(
 }
 
 export function getTitle(entry: any, titleField: string, ellipsisCount?: number) {
+  // Handle placeholder items with missing title fields
+  if (entry.isPlaceholder && (!entry[titleField] || entry[titleField] === '')) {
+    return `[Missing content from ${entry.sourceLocale}]`;
+  }
+
   return ellipsis(entry[titleField]?.toString() ?? '', ellipsisCount ?? 200);
 }

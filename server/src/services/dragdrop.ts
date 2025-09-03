@@ -8,25 +8,82 @@ export interface SortIndexParams extends z.infer<typeof SortIndexRequestSchema> 
   rankFieldName: string;
 }
 
+export interface PlaceholderItem {
+  id: number;
+  isPlaceholder: true;
+  sourceLocale: string;
+  [key: string]: any;
+}
+
+export interface SortIndexItem {
+  id: number;
+  isPlaceholder?: boolean;
+  sourceLocale?: string;
+  [key: string]: any;
+}
+
 export interface RankUpdate {
   id: number;
   rank: number;
 }
 
+type ContentQueryResponse = { locale: string; id: string; documentId: string };
+
 const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
   async sortIndex({ contentType, rankFieldName, locale }: SortIndexParams) {
-    let indexData = {
-      populate: '*',
-      locale: locale,
-      sort: [`${rankFieldName}:asc`],
-    };
-
     try {
-      return await strapi
-        .documents(contentType as StrapiTypes.UID.CollectionType)
-        .findMany(indexData);
+      // Get all available locales for this content type
+      const allLocalizations = (await strapi.db.query(contentType).findMany({
+        where: {
+          publishedAt: {
+            $eq: null,
+          },
+        },
+      })) as ContentQueryResponse[];
+
+      // Group by locale
+      const localeGroups = allLocalizations.reduce<{ [locale: string]: ContentQueryResponse[] }>(
+        (acc, item) => {
+          const { locale } = item;
+          if (!acc[locale]) {
+            acc[locale] = [];
+          }
+          acc[locale].push(item);
+          return acc;
+        },
+        {}
+      );
+
+      // Get current locale items as a map for quick lookup
+      const currentItemsMap = new Map();
+      localeGroups[locale].forEach((item: any) => {
+        currentItemsMap.set(item.documentId, item);
+      });
+
+      // Find all unique items across locales
+      const allUniqueItems = currentItemsMap;
+      Object.entries(localeGroups).forEach(([localeKey, items]) => {
+        items.forEach((item: any) => {
+          if (!allUniqueItems.has(item.documentId)) {
+            allUniqueItems.set(item.documentId, {
+              ...item,
+              sourceLocale: localeKey,
+              isPlaceholder: true,
+            });
+          }
+        });
+      });
+
+      const sortedAllItems = Array.from(allUniqueItems.values()).sort((a, b) => {
+        const rankA = a[rankFieldName] ?? Infinity;
+        const rankB = b[rankFieldName] ?? Infinity;
+        return rankA - rankB;
+      });
+
+      return sortedAllItems;
     } catch (err) {
-      return {};
+      console.error('Error in sortIndex:', err);
+      return [];
     }
   },
 

@@ -31,6 +31,9 @@ export interface ContentTypeResponse {
 
 export interface GetPageEntriesResponse {
   id: number;
+  isPlaceholder?: boolean;
+  sourceLocale?: string;
+  [key: string]: any;
 }
 
 export interface ContentTypeConfigResponse {

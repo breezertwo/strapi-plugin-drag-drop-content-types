@@ -15,6 +15,7 @@ type Props = HTMLAttributes<HTMLDivElement> & {
 const SortableListItem = ({ item, settings, isSelected, onSelectItem, ...props }: Props) => {
   const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
     id: item.id,
+    disabled: item.isPlaceholder,
   });
 
   const styles = {
@@ -23,8 +24,8 @@ const SortableListItem = ({ item, settings, isSelected, onSelectItem, ...props }
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    // Only handle click if not dragging and onSelect is provided
-    if (!isDragging && onSelectItem) {
+    // Only handle click if not dragging, onSelect is provided, and not a placeholder
+    if (!isDragging && onSelectItem && !item.isPlaceholder) {
       e.stopPropagation();
       onSelectItem(isSelected ? -1 : item.id);
     }

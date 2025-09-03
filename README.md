@@ -1,64 +1,66 @@
-<div align="center">
-  <img src="https://user-images.githubusercontent.com/37687705/192227260-db082018-947a-4166-a3f4-983e1024dd59.png" width="20%">
-  <h1>Strapi plugin drag-drop-content-types</h1>
-</div>
+# Strapi Plugin Drag Drop Content Types
 
-![dragdropcrop](https://user-images.githubusercontent.com/37687705/212884821-356ec68c-b71a-4b89-9e99-8a625f84cfbe.gif)
+Order your content types by rank easily via drag and drop. Simply add a rank field to your content types to get ready for sorting. Supports stable ranks across multiple locales even when a content type is not translated for all locales.
 
-Inspired by the [Drag-Drop-Content-Type Strapi 4 plugin](https://github.com/plantagoIT/strapi-drag-drop-content-type-plugin).
-Drag-drop feature completely rewritten to use dndkit because react-sortable-hoc is deprecated and not compatible with React 18.
+![Plugin Version](https://img.shields.io/badge/version-5.2.0-blue)
+![Strapi Version](https://img.shields.io/badge/strapi-v5.0.0+-green)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## ⏳ Installation
+## ✨ Features
 
-Install
+- **Simple Ordering** Via modal in the content manager list view
+- **Drag and Drop** or **Buttons** for moving content types up and down
+- **Multi-Locale Support** Updates all releated available locales
+- **Permission Management**: Select which users can use the plugin with a specific permission
+
+![dragdropcrop](https://s14.gifyu.com/images/bTE3p.gif)
+
+## 📦 Installation
 
 ```bash
 npm i @breezertwo/strapi-plugin-drag-drop-content-types
 ```
 
-## 🔧 Configuration
+## 🚀 Quick Start
 
-### In your config
+1. **Install the plugin**
 
-1. Add the following to your `config/plugins.ts` file. Create the file, if it doesn't exist.
+2. **Enable the plugin** in your `config/plugins.ts`:
 
-```js
-export default () => ({
-  // ...
+```ts
+module.exports = {
   'drag-drop-content-types': {
     enabled: true,
   },
-});
+};
 ```
 
-2. Run `npm run build` and restart the app using `npm run develop`.
+4. **Restart** your Strapi application in development mode
 
-### In the app
+5. **Setup the plugin**
+   - Go to `Settings` → `Drag Drop Content Type` → `Configuration`
+   - (Optional) Add the _Rank Field Name_ used for sorting. Default field name is `rank`
+   - Create a `Number` field called `rank` (or your custom field name) and `Number format: integer` in the content types you want to be sortable
+6. **Restart** your Strapi application
 
-1. Go to `Settings` → `Drag Drop Content Type` → `Configuration`.
-2. Specify the `Rank Field Name` used for sorting or leave the default field name `rank`.
-3. Add a `Number` field with `Name: myRankFieldName` and `Number format: integer` to the sortable _ContentType_.
-4. Configure the view of your _ContentType_ by adding `Default sort attribute → rank` and `Default sort order → ASC` to update the view after dragging.
-5. If needed: grant permissions for the `rank` field to your roles.
+7. **Access sorting** in via the Drag icon in the ListView
 
-#### Hints
+## 🔧 Other config options
 
-- You can set a `title` value that will be displayed in the menu instead of the default field.
-- A second field can be displayed in the menu via the `subtitle` setting. It can be either a string-like field or an object such as a relation, that has a `title` field as configured in the settings.
-- You can enable webhooks to trigger something after updating the order.
+- You can set a custom _TitleFieldName_ that will be used to display the title in the drag list instead of the default `mainField`
+- A second field can be displayed in the menu via the _SubtitleFieldName_. It can be either a string-like field or an object such as a relation, that has a `title` field named the same as the _TitleFieldName_.
+- You can enable webhooks to trigger after updating the order.
 
-### In your frontend
+## 📄 License
 
-You can make a request in the frontend to get the ordered items. In this example the _ContentType_ is called `Foo` and ordered via the `rank` field.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```
-http://localhost:1337/api/foo?sort=rank:asc
-```
+- Built for [Strapi](https://strapi.io/) - The leading open-source headless CMS
+- Uses [Strapi Design System](https://design-system.strapi.io/) for UI components
+- Based on [drag-drop-content-types-strapi5](https://github.com/cslegany-synerinsoft/drag-drop-content-types-strapi5)
 
-## 🤝 Contribute
+---
 
-Feel free to fork and make pull requests to this plugin. All input is welcome - thanks for all contributions so far!
-
-## ⭐️ Support
-
-I you like this project, please give it a star ⭐️. Maybe this will help it getting integrated to strapi's core some day 😊.
+<div align="center">
+  <strong>⭐ If this plugin helped you, please consider giving it a star on GitHub! ⭐</strong>
+</div>
