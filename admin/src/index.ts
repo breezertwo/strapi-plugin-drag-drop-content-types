@@ -1,7 +1,6 @@
 import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
 import SortModal from './components/SortModal';
-import pluginPermissions from './permissions';
 
 export default {
   register(app: any) {
@@ -12,7 +11,7 @@ export default {
           id: `${PLUGIN_ID}.plugin.name`,
           defaultMessage: 'Drag Drop Content Types',
         },
-        permissions: pluginPermissions.main,
+        permissions: [{ action: 'plugin::drag-drop-content-types.settings', subject: null }],
       },
       [
         {
@@ -23,6 +22,7 @@ export default {
           id: 'settings',
           to: `${PLUGIN_ID}`,
           Component: () => import('./pages/Settings'),
+          permissions: [{ action: 'plugin::drag-drop-content-types.settings', subject: null }],
         },
       ]
     );

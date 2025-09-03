@@ -6,7 +6,13 @@ export default {
       path: '/sort-index',
       handler: 'dragdrop.sortIndex',
       config: {
-        policies: ['admin::isAuthenticatedAdmin'],
+        policies: [
+          'admin::isAuthenticatedAdmin',
+          {
+            name: 'plugin::content-manager.hasPermissions',
+            config: { actions: ['plugin::drag-drop-content-types.usage'] },
+          },
+        ],
       },
     },
     {
@@ -14,7 +20,13 @@ export default {
       path: '/batch-update',
       handler: 'dragdrop.batchUpdate',
       config: {
-        policies: ['admin::isAuthenticatedAdmin'],
+        policies: [
+          'admin::isAuthenticatedAdmin',
+          {
+            name: 'plugin::content-manager.hasPermissions',
+            config: { actions: ['plugin::drag-drop-content-types.usage'] },
+          },
+        ],
       },
     },
   ],
