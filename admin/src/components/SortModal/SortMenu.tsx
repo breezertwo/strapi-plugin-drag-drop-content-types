@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MoveDirection, SortMenuProps } from './types';
 import { IconButton } from '@strapi/design-system';
-import { Drag, ArrowUp, ArrowDown, CaretUp, CaretDown } from '@strapi/icons';
+import { Drag, ArrowUp, ArrowDown, CaretUp, CaretDown, Loader } from '@strapi/icons';
 import SortableList from './SortableList';
 import { Modal } from '@strapi/design-system';
 import { Button } from '@strapi/design-system';
@@ -61,9 +61,15 @@ const SortMenu = ({ status, data, onSortEnd, settings }: SortMenuProps) => {
           variant="secondary"
           disabled={status === 'success' ? false : true}
           withTooltip={true}
-          label={formatMessage({ id: getTranslation('plugin.settings.sortableList.menuIcon') })}
+          label={formatMessage({
+            id: getTranslation(
+              status === 'success'
+                ? 'plugin.settings.sortableList.menuIcon'
+                : 'plugin.settings.sortableList.menuIcon.off'
+            ),
+          })}
         >
-          <Drag />
+          {status === 'loading' ? <Loader /> : <Drag />}
         </IconButton>
       </Modal.Trigger>
       <Modal.Content>

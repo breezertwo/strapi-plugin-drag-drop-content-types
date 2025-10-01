@@ -44,7 +44,9 @@ const SortModalButton = () => {
   const updateContentRanks = async (item: UpdateContentRanksParams) => {
     const { oldIndex, newIndex } = item;
 
-    if (oldIndex === newIndex || !contentListData || !settingsData || isPending || isFetching) {
+    if (oldIndex === newIndex || !contentListData || !settingsData) return;
+
+    if (isPending || isFetching) {
       return toggleNotification({
         type: 'warning',
         message: 'List update pending. Please wait...',

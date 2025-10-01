@@ -1,7 +1,7 @@
 export type MoveDirection = 'up' | 'down' | 'top' | 'bottom';
 
 export interface SortMenuProps {
-  status: string;
+  status: 'loading' | 'empty' | 'success';
   data: GetPageEntriesResponse[];
   onSortEnd: (item: UpdateContentTypeParams) => void;
   settings: FetchedSettings;
