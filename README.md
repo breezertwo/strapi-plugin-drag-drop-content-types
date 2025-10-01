@@ -2,15 +2,15 @@
 
 Order your content types by rank easily via drag and drop. Simply add a rank field to your content types to get ready for sorting. Supports stable ranks across multiple locales even when a content type is not translated for all locales.
 
-![Plugin Version](https://img.shields.io/badge/version-5.2.1-blue)
+![Plugin Version](https://img.shields.io/badge/version-5.3.0-blue)
 ![Strapi Version](https://img.shields.io/badge/strapi-v5.0.0+-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ Features
 
-- **Simple Ordering** Via modal in the content manager list view
+- **Simple Ordering** via modal in the content manager list view
 - **Drag and Drop** or **Buttons** for moving content types up and down
-- **Multi-Locale Support** Updates all releated available locales
+- **Multi-Locale Support** Updates all related available locales
 - **Permission Management**: Select which users can use the plugin with a specific permission
 
 ![dragdropcrop](https://s14.gifyu.com/images/bTE3p.gif)
@@ -40,7 +40,7 @@ module.exports = {
 5. **Setup the plugin**
    - Go to `Settings` → `Drag Drop Content Type` → `Configuration`
    - (Optional) Add the _Rank Field Name_ used for sorting. Default field name is `rank`
-   - Create a `Number` field called `rank` (or your custom field name) and `Number format: integer` in the content types you want to be sortable
+   - Create a `Number` field called `rank` (or your custom field name) and `Number format: integer` in the content types you want to be sortable. Make the field optional & not localized.
 6. **Restart** your Strapi application
 
 7. **Access sorting** in via the Drag icon in the ListView

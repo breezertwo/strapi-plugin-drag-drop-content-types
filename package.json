@@ -1,25 +1,13 @@
 {
   "name": "@breezertwo/strapi-plugin-drag-drop-content-types",
-  "version": "5.2.1",
-  "description": "This plugin add a drag and droppable list that allows you to sort content type entries.",
+  "version": "5.3.0",
+  "description": "This plugin adds a drag and drop list that allows you to sort content type entries by rank.",
   "strapi": {
     "kind": "plugin",
     "name": "drag-drop-content-types",
     "displayName": "Drag Drop Content Types",
-    "description": "This plugin add a drag and droppable list that allows you to sort content type entries."
+    "description": "This plugin adds a drag and drop list that allows you to sort content type entries by rank."
   },
-  "keywords": [
-    "strapi",
-    "plugin",
-    "strapi-plugin",
-    "drag",
-    "drop",
-    "drag and drop",
-    "drag drop content types",
-    "content types",
-    "sort",
-    "order"
-  ],
   "license": "MIT",
   "type": "commonjs",
   "exports": {
@@ -85,11 +73,22 @@
     "styled-components": "^6.1.19"
   },
   "author": "breezertwo <andreas@heycare.com> (https://heycare.com/)",
-  "maintainers": [
-    {
-      "name": "https://heycare.com/",
-      "email": "andreas@heycare.com",
-      "url": "https://heycare.com/"
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/breezertwo/strapi-plugin-drag-drop-content-types.git"
+  },
+  "keywords": [
+    "strapi",
+    "plugin",
+    "strapi-plugin",
+    "drag",
+    "drop",
+    "drag and drop",
+    "drag drop content types",
+    "content types",
+    "sort",
+    "order",
+    "ranking",
+    "reordering"
   ]
 }
