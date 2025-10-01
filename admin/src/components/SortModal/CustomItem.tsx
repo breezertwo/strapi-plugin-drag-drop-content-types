@@ -35,7 +35,7 @@ const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
         ref={ref}
         style={{
           ...style,
-          border: isSelected ? '2px solid alternative600' : '2px solid transparent',
+          border: isSelected ? '2px solid #ac73e6' : '2px solid transparent',
           opacity: isPlaceholder ? 0.6 : 1,
         }}
         background={isPlaceholder ? 'neutral300' : isDragging ? 'neutral600' : 'neutral150'}

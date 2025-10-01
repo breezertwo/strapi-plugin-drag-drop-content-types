@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { MoveDirection, SortMenuProps } from './types';
 import { IconButton } from '@strapi/design-system';
 import { Drag, ArrowUp, ArrowDown, CaretUp, CaretDown } from '@strapi/icons';
-import { Popover } from '@strapi/design-system';
 import SortableList from './SortableList';
 import { Modal } from '@strapi/design-system';
 import { Button } from '@strapi/design-system';

@@ -33,7 +33,7 @@ const createDefaultConfig = async () => {
   return pluginStore.get({ key: 'settings' });
 };
 
-export default ({ strapi }: { strapi: Core.Strapi }) => ({
+export default () => ({
   async getSettings() {
     const pluginStore = getPluginStore();
     let config = await pluginStore.get({ key: 'settings' });
@@ -41,10 +41,6 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
       config = await createDefaultConfig();
     }
 
-    const settingService = strapi.plugin('drag-drop-content-types').service('settings');
-    const cm = strapi.plugin('content-manager').service('content-types');
-
-    console.log('Settings:', JSON.stringify(cm, null, 2));
     return config;
   },
 
