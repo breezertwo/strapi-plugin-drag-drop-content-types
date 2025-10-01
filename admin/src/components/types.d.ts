@@ -4,6 +4,7 @@ export interface SortMenuProps {
   status: 'loading' | 'empty' | 'success';
   data: GetPageEntriesResponse[];
   onSortEnd: (item: UpdateContentTypeParams) => void;
+  onOpenChange?: (open: boolean) => void;
   settings: FetchedSettings;
 }
 

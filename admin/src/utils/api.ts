@@ -1,12 +1,11 @@
 import { useFetchClient } from '@strapi/strapi/admin';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type {
-  ContentTypeConfigResponse,
-  GetPageEntriesResponse,
-} from 'src/components/SortModal/types';
+import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ContentTypeConfigResponse, GetPageEntriesResponse } from '../components/types';
 import type { PluginSettingsResponse } from '../../../server/src/services/settings';
 
-export const useFetchSettings = (contentType: string) => {
+export const queryClient = new QueryClient();
+
+export const useFetchSettings = (contentType: string, enabled = true) => {
   const { get } = useFetchClient();
 
   const fetchSettings = async () => {
@@ -29,16 +28,18 @@ export const useFetchSettings = (contentType: string) => {
     return fetchedSettings;
   };
 
-  return useQuery({ queryKey: ['fetch_settings', contentType], queryFn: fetchSettings });
+  return useQuery({ queryKey: ['fetch_settings', contentType], queryFn: fetchSettings, enabled });
 };
 
-export const useFetchContentList = (contentType: string, locale: string) => {
+export const useFetchContentList = (contentType: string, locale?: string) => {
   const { get } = useFetchClient();
 
   const fetchContentList = async () => {
+    if (!locale) return [];
+
     const sortIndexParam = new URLSearchParams({
       contentType,
-      locale: locale,
+      locale,
     });
 
     const result = await get<GetPageEntriesResponse[]>(
@@ -50,6 +51,7 @@ export const useFetchContentList = (contentType: string, locale: string) => {
   return useQuery({
     queryKey: ['fetch_content_list', contentType, locale],
     queryFn: fetchContentList,
+    enabled: !!locale,
   });
 };
 

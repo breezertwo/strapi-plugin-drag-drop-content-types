@@ -1,6 +1,6 @@
 import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
-import SortModal from './components/SortModal';
+import { SortModalComponent } from './components/modal/SortModalComponent';
 
 export default {
   register(app: any) {
@@ -38,7 +38,7 @@ export default {
   bootstrap(app: any) {
     app.getPlugin('content-manager').injectComponent('listView', 'actions', {
       name: 'sort-component',
-      Component: SortModal,
+      Component: SortModalComponent,
     });
   },
 

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { MoveDirection, SortMenuProps } from './types';
+import { MoveDirection, SortMenuProps } from '../types';
 import { IconButton } from '@strapi/design-system';
 import { Drag, ArrowUp, ArrowDown, CaretUp, CaretDown, Loader } from '@strapi/icons';
-import SortableList from './SortableList';
+import SortableList from '../list/SortableList';
 import { Modal } from '@strapi/design-system';
 import { Button } from '@strapi/design-system';
 import { useIntl } from 'react-intl';
@@ -11,7 +11,7 @@ import { Box, Flex } from '@strapi/design-system';
 import { useDispatch } from 'react-redux';
 import { adminApi, unstable_useContentManagerContext } from '@strapi/strapi/admin';
 
-const SortMenu = ({ status, data, onSortEnd, settings }: SortMenuProps) => {
+export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: SortMenuProps) => {
   const [selectedItemId, setSelectedItemId] = useState<number>();
 
   const { formatMessage } = useIntl();
@@ -48,6 +48,7 @@ const SortMenu = ({ status, data, onSortEnd, settings }: SortMenuProps) => {
   return (
     <Modal.Root
       onOpenChange={(open: boolean) => {
+        onOpenChange?.(open);
         if (!open) {
           dispatch(
             adminApi.util.invalidateTags([{ type: 'Document' as any, id: `${model}_LIST` }])
@@ -74,7 +75,11 @@ const SortMenu = ({ status, data, onSortEnd, settings }: SortMenuProps) => {
       </Modal.Trigger>
       <Modal.Content>
         <Modal.Header>
-          <Modal.Title>Sort content</Modal.Title>
+          <Modal.Title>
+            {formatMessage({
+              id: getTranslation('plugin.modal.header.title'),
+            })}
+          </Modal.Title>
         </Modal.Header>
         <Box maxHeight="calc(100vh - 200px)" overflow="auto" padding={4}>
           <SortableList
@@ -139,5 +144,3 @@ const SortMenu = ({ status, data, onSortEnd, settings }: SortMenuProps) => {
     </Modal.Root>
   );
 };
-
-export default SortMenu;

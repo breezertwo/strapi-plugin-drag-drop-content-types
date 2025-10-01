@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Flex, Field, TextInput, Box } from '@strapi/design-system';
 import { useIntl } from 'react-intl';
-import { getTranslation as getTrad } from '../utils/getTranslation';
+import { getTranslation as getTrad } from '../../utils/getTranslation';
 
 interface SettingsTextFieldProps {
   fieldName: string;
@@ -16,7 +16,7 @@ interface SettingsTextFieldProps {
   updateItem: (fieldName: string, value: string) => void;
 }
 
-const SettingsTextField = (props: SettingsTextFieldProps) => {
+export const SettingsTextField = (props: SettingsTextFieldProps) => {
   const {
     fieldName,
     displayName,
@@ -69,5 +69,3 @@ const SettingsTextField = (props: SettingsTextFieldProps) => {
     </Field.Root>
   );
 };
-
-export default SettingsTextField;

@@ -1,8 +1,8 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { HTMLAttributes } from 'react';
-import CustomItem, { TItem } from './CustomItem';
-import { FetchedSettings } from './types';
+import { TItem, StyledListItem } from './StyledListItem';
+import { FetchedSettings } from '../types';
 import { PointerSensor, useSensor } from '@dnd-kit/core';
 
 type Props = HTMLAttributes<HTMLDivElement> & {
@@ -32,7 +32,7 @@ const SortableListItem = ({ item, settings, isSelected, onSelectItem, ...props }
   };
 
   return (
-    <CustomItem
+    <StyledListItem
       item={item}
       ref={setNodeRef}
       style={styles}

@@ -1,12 +1,9 @@
 import { arrayMoveImmutable } from 'array-move';
-import { useEffect, useState } from 'react';
 import {
-  useFetchClient,
   useNotification,
   useAPIErrorHandler,
   FetchError,
   isFetchError,
-  adminApi,
 } from '@strapi/strapi/admin';
 import { useQueryParams } from '../../utils/useQueryParams';
 import type {
@@ -15,26 +12,27 @@ import type {
   GetPageEntriesResponse,
   QueryParams,
   UpdateContentRanksParams,
-} from './types';
-import SortMenu from './SortMenu';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+} from '../types';
+import { SortModal } from './SortModal';
 import { useBatchUpdateContentList, useFetchContentList, useFetchSettings } from '../../utils/api';
+import { useState } from 'react';
 
-const SortModalButton = () => {
-  const { put } = useFetchClient();
-
+export const SortModalLogicWrapper = () => {
   const { queryParams } = useQueryParams();
   const { toggleNotification } = useNotification();
   const { formatAPIError } = useAPIErrorHandler();
 
   const paths = window.location.pathname.split('/');
   const contentType = paths[paths.length - 1];
+  const locale = queryParams?.['plugins[i18n][locale]'];
 
-  const params = queryParams as unknown as QueryParams;
-  const locale = params?.['plugins[i18n][locale]'];
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { mutate: batchUpdateContentList, isPending } = useBatchUpdateContentList(contentType);
-  const { data: settingsData, isLoading: settingsLoading } = useFetchSettings(contentType);
+  const { data: settingsData, isLoading: settingsLoading } = useFetchSettings(
+    contentType,
+    isModalOpen
+  );
   const {
     data: contentListData,
     isLoading: contentListLoading,
@@ -97,12 +95,13 @@ const SortModalButton = () => {
   };
 
   return (
-    <SortMenu
-      data={contentListData || []}
+    <SortModal
+      data={contentListData ?? []}
       status={getStatus()}
       onSortEnd={updateContentRanks}
+      onOpenChange={(open: boolean) => setIsModalOpen(open)}
       settings={
-        settingsData || {
+        settingsData ?? {
           rank: '',
           title: '',
           subtitle: null,
@@ -111,15 +110,3 @@ const SortModalButton = () => {
     />
   );
 };
-
-const queryClient = new QueryClient();
-
-const SortModalElement = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SortModalButton />
-    </QueryClientProvider>
-  );
-};
-
-export default SortModalElement;

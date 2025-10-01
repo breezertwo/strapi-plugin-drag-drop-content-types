@@ -2,7 +2,7 @@ import { Flex } from '@strapi/design-system';
 import { Box, Grid, Typography } from '@strapi/design-system';
 import { Drag } from '@strapi/icons';
 import { CSSProperties, forwardRef, HTMLAttributes } from 'react';
-import { FetchedSettings } from './types';
+import { FetchedSettings } from '../types';
 import { Tooltip } from '@strapi/design-system';
 
 export type TItem = {
@@ -14,7 +14,7 @@ export type TItem = {
   [key: string]: any;
 };
 
-type CustomItemProps = {
+type StyledListItemProps = {
   item: TItem;
   settings: FetchedSettings;
   isDragging?: boolean;
@@ -22,7 +22,7 @@ type CustomItemProps = {
   onPressItem?: (id: number) => void;
 } & HTMLAttributes<HTMLDivElement>;
 
-const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
+export const StyledListItem = forwardRef<HTMLDivElement, StyledListItemProps>(
   ({ item, isDragging, style, isSelected, onPressItem, settings, ...props }, ref) => {
     const isPlaceholder = item.isPlaceholder;
     const rankValue = item[settings.rank];
@@ -81,5 +81,3 @@ const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
     );
   }
 );
-
-export default CustomItem;

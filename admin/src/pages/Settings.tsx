@@ -5,8 +5,7 @@ import { Flex, Box, Button, Grid, Typography } from '@strapi/design-system';
 import { Information, Check } from '@strapi/icons';
 import { useIntl } from 'react-intl';
 import { getTranslation as getTrad } from '../utils/getTranslation';
-import SettingsTextField from '../components/SettingsTextField';
-import SettingsToggleField from '../components/SettingsToggleField';
+import { SettingsTextField, SettingsToggleField } from '../components/settings';
 import { PluginSettingsBody, PluginSettingsResponse } from '../../../server/src/services/settings';
 
 const Settings = () => {
