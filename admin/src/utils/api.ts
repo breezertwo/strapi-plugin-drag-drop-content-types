@@ -1,11 +1,12 @@
-import { useFetchClient } from '@strapi/strapi/admin';
+import { useFetchClient, useNotification } from '@strapi/strapi/admin';
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ContentTypeConfigResponse, GetPageEntriesResponse } from '../components/types';
 import type { PluginSettingsResponse } from '../../../server/src/services/settings';
+import { useIntl } from 'react-intl';
 
 export const queryClient = new QueryClient();
 
-export const useFetchSettings = (contentType: string, enabled = true) => {
+export const useFetchSettings = (contentType: string, enabled = true, fallback = true) => {
   const { get } = useFetchClient();
 
   const fetchSettings = async () => {
@@ -15,9 +16,10 @@ export const useFetchSettings = (contentType: string, enabled = true) => {
       rank: data.body.rank,
       title: data.body.title,
       subtitle: data.body.subtitle?.length > 0 ? data.body.subtitle : null,
+      triggerWebhooks: data.body.triggerWebhooks,
     };
 
-    if (fetchedSettings.title.length === 0) {
+    if (fetchedSettings.title.length === 0 && fallback) {
       const { data: contentTypeConfig } = await get<ContentTypeConfigResponse>(
         `/content-manager/content-types/${contentType}/configuration`
       );
@@ -29,6 +31,40 @@ export const useFetchSettings = (contentType: string, enabled = true) => {
   };
 
   return useQuery({ queryKey: ['fetch_settings', contentType], queryFn: fetchSettings, enabled });
+};
+
+export const useUpdateSettings = () => {
+  const queryClient = useQueryClient();
+  const { post } = useFetchClient();
+  const { formatMessage } = useIntl();
+  const { toggleNotification } = useNotification();
+
+  const updateSettings = async (update: {
+    rank: string;
+    title: string;
+    subtitle: string | null;
+    triggerWebhooks: boolean;
+  }) => {
+    await post(`/drag-drop-content-types/settings`, {
+      body: update,
+    });
+  };
+
+  return useMutation({
+    mutationFn: updateSettings,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['fetch_settings'] });
+    },
+    onSuccess: () => {
+      toggleNotification({
+        type: 'success',
+        message: formatMessage({
+          id: 'plugin.settings.updated',
+          defaultMessage: 'Settings successfully updated',
+        }),
+      });
+    },
+  });
 };
 
 export const useFetchContentList = (contentType: string, locale?: string) => {
