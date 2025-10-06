@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Flex, Field, Toggle, Box } from '@strapi/design-system';
 import { useIntl } from 'react-intl';
-import { getTranslation as getTrad } from '../utils/getTranslation';
+import { getTranslation as getTrad } from '../../utils/getTranslation';
 
 interface SettingsToggleFieldProps {
   fieldName: string;
@@ -15,7 +15,7 @@ interface SettingsToggleFieldProps {
   updateItem: (fieldName: string, value: boolean) => void;
 }
 
-const SettingsToggleField = (props: SettingsToggleFieldProps) => {
+export const SettingsToggleField = (props: SettingsToggleFieldProps) => {
   const {
     fieldName,
     displayName,
@@ -67,5 +67,3 @@ const SettingsToggleField = (props: SettingsToggleFieldProps) => {
     </Field.Root>
   );
 };
-
-export default SettingsToggleField;

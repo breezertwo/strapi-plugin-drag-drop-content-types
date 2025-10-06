@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { GetPageEntriesResponse, SortableListProps } from './types';
 import {
   DndContext,
   PointerSensor,
@@ -12,8 +11,9 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext } from '@dnd-kit/sortable';
 import SortableListItem from './SortableListItem';
+import { TItem } from './StyledListItem';
+import { GetPageEntriesResponse, SortableListProps } from '../types';
 import { getSubtitle, getTitle } from '../../utils/title-transform';
-import { TItem } from './CustomItem';
 
 const SortableList = ({
   data,

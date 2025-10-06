@@ -2,7 +2,7 @@ import { Flex } from '@strapi/design-system';
 import { Box, Grid, Typography } from '@strapi/design-system';
 import { Drag } from '@strapi/icons';
 import { CSSProperties, forwardRef, HTMLAttributes } from 'react';
-import { FetchedSettings } from './types';
+import { FetchedSettings } from '../types';
 import { Tooltip } from '@strapi/design-system';
 
 export type TItem = {
@@ -14,7 +14,7 @@ export type TItem = {
   [key: string]: any;
 };
 
-type CustomItemProps = {
+type StyledListItemProps = {
   item: TItem;
   settings: FetchedSettings;
   isDragging?: boolean;
@@ -22,7 +22,7 @@ type CustomItemProps = {
   onPressItem?: (id: number) => void;
 } & HTMLAttributes<HTMLDivElement>;
 
-const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
+export const StyledListItem = forwardRef<HTMLDivElement, StyledListItemProps>(
   ({ item, isDragging, style, isSelected, onPressItem, settings, ...props }, ref) => {
     const isPlaceholder = item.isPlaceholder;
     const rankValue = item[settings.rank];
@@ -38,7 +38,7 @@ const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
           border: isSelected ? '2px solid #ac73e6' : '2px solid transparent',
           opacity: isPlaceholder ? 0.6 : 1,
         }}
-        background={isPlaceholder ? '#3a3a52' : isDragging ? '#62629d' : '#27273f'}
+        background={isPlaceholder ? 'neutral300' : isDragging ? 'neutral600' : 'neutral150'}
         cursor={isPlaceholder ? 'not-allowed' : isDragging ? 'grabbing' : 'grab'}
         transform={isDragging ? 'scale(1.05)' : 'scale(1)'}
         zIndex={isDragging ? 1000 : 1}
@@ -81,5 +81,3 @@ const CustomItem = forwardRef<HTMLDivElement, CustomItemProps>(
     );
   }
 );
-
-export default CustomItem;

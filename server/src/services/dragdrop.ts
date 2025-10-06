@@ -54,7 +54,15 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
         {}
       );
 
-      // Get current locale items as a map for quick lookup
+      if (!localeGroups[locale]) {
+        return [];
+      }
+
+      if (localeGroups[locale][0][rankFieldName] === undefined) {
+        // console.info(`No rank field '${rankFieldName}' on content type '${contentType}'`);
+        return [];
+      }
+
       const currentItemsMap = new Map();
       localeGroups[locale].forEach((item: any) => {
         currentItemsMap.set(item.documentId, item);
@@ -116,7 +124,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
         }
       }
 
-      // Trigger webhook listener for updated entry
       if (shouldTriggerWebhooks) {
         const info: Record<string, unknown> = {
           model: contentType.split('.').at(-1),

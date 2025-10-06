@@ -25,5 +25,7 @@
   "plugin.settings.subtitle.tooltip": "Field that will show up in the drag drop menu attached to title",
   "plugin.settings.subtitle.placeholder": "Subtitle",
   "plugin.settings.sortableList.showMore": "Load more",
-  "plugin.settings.sortableList.menuIcon": "Open sort menu"
+  "plugin.settings.sortableList.menuIcon": "Open sort menu",
+  "plugin.settings.sortableList.menuIcon.off": "Sort menu is not available for this content-type. No content or no rank field present.",
+  "plugin.modal.header.title": "Sort content with drag & drop"
 }

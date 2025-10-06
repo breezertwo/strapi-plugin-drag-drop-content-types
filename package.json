@@ -1,25 +1,13 @@
 {
   "name": "@breezertwo/strapi-plugin-drag-drop-content-types",
-  "version": "5.2.1",
-  "description": "This plugin add a drag and droppable list that allows you to sort content type entries.",
+  "version": "5.3.0",
+  "description": "This plugin adds a drag and drop list that allows you to sort content type entries by rank.",
   "strapi": {
     "kind": "plugin",
     "name": "drag-drop-content-types",
     "displayName": "Drag Drop Content Types",
-    "description": "This plugin add a drag and droppable list that allows you to sort content type entries."
+    "description": "This plugin adds a drag and drop list that allows you to sort content type entries by rank."
   },
-  "keywords": [
-    "strapi",
-    "plugin",
-    "strapi-plugin",
-    "drag",
-    "drop",
-    "drag and drop",
-    "drag drop content types",
-    "content types",
-    "sort",
-    "order"
-  ],
   "license": "MIT",
   "type": "commonjs",
   "exports": {
@@ -51,43 +39,56 @@
     "watch:link": "strapi-plugin watch:link"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@strapi/design-system": "^2.0.0-rc.29",
-    "@strapi/icons": "^2.0.0-rc.29",
-    "array-move": "^4.0.0",
-    "react-intl": "^6.6.8",
-    "zod": "^4.1.5"
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "@strapi/design-system": "2.0.0-rc.30",
+    "@strapi/icons": "2.0.0-rc.30",
+    "@tanstack/react-query": "5.90.2",
+    "array-move": "4.0.0",
+    "zod": "4.1.5"
   },
   "devDependencies": {
-    "@strapi/sdk-plugin": "^5.3.2",
-    "@strapi/strapi": "^5.20.0",
-    "@strapi/typescript-utils": "^5.20.0",
+    "@strapi/sdk-plugin": "5.3.2",
+    "@strapi/strapi": "5.25.0",
+    "@strapi/typescript-utils": "5.25.0",
     "@types/react": "^18.3.24",
     "@types/react-dom": "^18.3.1",
     "prettier": "^3.6.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-intl": "^6",
     "react-router-dom": "^6.30.1",
     "styled-components": "^6.1.19",
-    "typescript": "^5.9.2"
+    "typescript": "5.9.2"
   },
   "peerDependencies": {
     "@strapi/sdk-plugin": "^5.2.6",
     "@strapi/strapi": "^5.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-intl": "^6",
     "react-redux": "^8.1.3",
     "react-router-dom": "^6.30.1",
     "styled-components": "^6.1.19"
   },
   "author": "breezertwo <andreas@heycare.com> (https://heycare.com/)",
-  "maintainers": [
-    {
-      "name": "https://heycare.com/",
-      "email": "andreas@heycare.com",
-      "url": "https://heycare.com/"
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/breezertwo/strapi-plugin-drag-drop-content-types.git"
+  },
+  "keywords": [
+    "strapi",
+    "plugin",
+    "strapi-plugin",
+    "drag",
+    "drop",
+    "drag and drop",
+    "drag drop content types",
+    "content types",
+    "sort",
+    "order",
+    "ranking",
+    "reordering"
   ]
 }
