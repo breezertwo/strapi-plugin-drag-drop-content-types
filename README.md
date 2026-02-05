@@ -2,7 +2,7 @@
 
 Order your content types by rank easily via drag and drop. Simply add a rank field to your content types to get ready for sorting. Supports stable ranks across multiple locales even when a content type is not translated for all locales.
 
-![Plugin Version](https://img.shields.io/badge/version-5.3.1-blue)
+![Plugin Version](https://img.shields.io/badge/version-5.4.0-blue)
 ![Strapi Version](https://img.shields.io/badge/strapi-v5.0.0+-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
