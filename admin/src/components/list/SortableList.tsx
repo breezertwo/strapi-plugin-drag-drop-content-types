@@ -1,15 +1,6 @@
-import { useState, useEffect } from 'react';
-import {
-  DndContext,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragStartEvent,
-  DragEndEvent,
-  TouchSensor,
-  closestCenter,
-} from '@dnd-kit/core';
-import { arrayMove, SortableContext } from '@dnd-kit/sortable';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { DragDropProvider } from '@dnd-kit/react';
+import { move } from '@dnd-kit/helpers';
 import SortableListItem from './SortableListItem';
 import { TItem } from './StyledListItem';
 import { GetPageEntriesResponse, SortableListProps } from '../types';
@@ -32,56 +23,62 @@ const SortableList = ({
     };
   };
 
-  const [items, setItems] = useState<TItem[]>([]);
+  const convertedData = useMemo(() => data.map(convertDataItem), [data, title, subtitle]);
+  const [items, setItems] = useState<TItem[]>(convertedData);
+
+  const previousItems = useRef<TItem[]>([]);
+  const dragStartItems = useRef<TItem[]>([]);
 
   useEffect(() => {
-    const convertedItems = data.map((x) => convertDataItem(x));
-    setItems(convertedItems);
-  }, [data, title, subtitle]);
+    setItems(convertedData);
+  }, [convertedData]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(TouchSensor)
-  );
+  const handleDragStart = () => {
+    previousItems.current = [...items];
+    dragStartItems.current = [...items];
+  };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) return;
+  const handleDragOver = (event: any) => {
+    setItems((currentItems) => move(currentItems, event));
+  };
 
-    const overItem = items.find((item) => item.id === over.id);
-
-    if (!overItem) {
+  const handleDragEnd = (event: any) => {
+    if (event.canceled) {
+      setItems(previousItems.current);
       return;
     }
 
-    const activeIndex = items.findIndex((item) => item.id === active.id);
-    const overIndex = items.findIndex((item) => item.id === over.id);
+    const startItems = dragStartItems.current;
+    const endItems = items;
 
-    if (activeIndex !== overIndex) {
-      setItems((prev) => arrayMove<TItem>(prev, activeIndex, overIndex));
+    const { source } = event.operation;
+    if (!source) return;
+
+    const oldIndex = startItems.findIndex((item) => item.id === source.id);
+    const newIndex = endItems.findIndex((item) => item.id === source.id);
+
+    if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+      onSortEnd({ oldIndex, newIndex });
     }
-
-    onSortEnd({ oldIndex: activeIndex, newIndex: overIndex });
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={items}>
-        {items.map((item) => (
-          <SortableListItem
-            key={item.id}
-            item={item}
-            settings={settings}
-            isSelected={selectedItemId === item.id}
-            onSelectItem={onItemSelect}
-          />
-        ))}
-      </SortableContext>
-    </DndContext>
+    <DragDropProvider
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      {items.map((item, index) => (
+        <SortableListItem
+          key={item.id}
+          item={item}
+          index={index}
+          settings={settings}
+          isSelected={selectedItemId === item.id}
+          onSelectItem={onItemSelect}
+        />
+      ))}
+    </DragDropProvider>
   );
 };
 

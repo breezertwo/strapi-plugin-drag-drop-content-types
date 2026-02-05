@@ -81,6 +81,7 @@ export const useFetchContentList = (contentType: string, locale?: string) => {
     const result = await get<GetPageEntriesResponse[]>(
       `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`
     );
+
     return result.data || [];
   };
 
@@ -91,26 +92,43 @@ export const useFetchContentList = (contentType: string, locale?: string) => {
   });
 };
 
-export const useBatchUpdateContentList = (contentType: string) => {
+export const useBatchUpdateContentList = (contentType: string, locale?: string) => {
   const { put } = useFetchClient();
   const queryClient = useQueryClient();
 
-  const batchUpdateContentList = async (
+  const batchUpdateContentList = async (params: {
     updates: {
       id: number;
       rank: number;
-    }[]
-  ) => {
+    }[];
+    optimisticData: GetPageEntriesResponse[];
+  }) => {
     await put('/drag-drop-content-types/batch-update', {
       contentType,
-      updates,
+      updates: params.updates,
     });
   };
 
   return useMutation({
     mutationFn: batchUpdateContentList,
+    onMutate: async (params) => {
+      await queryClient.cancelQueries({ queryKey: ['fetch_content_list', contentType, locale] });
+      const previousData = queryClient.getQueryData<GetPageEntriesResponse[]>([
+        'fetch_content_list',
+        contentType,
+        locale,
+      ]);
+
+      queryClient.setQueryData(['fetch_content_list', contentType, locale], params.optimisticData);
+      return { previousData };
+    },
+    onError: (_err, _params, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['fetch_content_list', contentType, locale], context.previousData);
+      }
+    },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['fetch_content_list', contentType] });
+      queryClient.invalidateQueries({ queryKey: ['fetch_content_list', contentType, locale] });
     },
   });
 };
