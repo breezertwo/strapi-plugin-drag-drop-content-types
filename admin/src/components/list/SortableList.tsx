@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { DragDropProvider } from '@dnd-kit/react';
 import { move } from '@dnd-kit/helpers';
 import SortableListItem from './SortableListItem';
@@ -23,14 +23,15 @@ const SortableList = ({
     };
   };
 
-  const [items, setItems] = useState<TItem[]>(data.map(convertDataItem));
+  const convertedData = useMemo(() => data.map(convertDataItem), [data, title, subtitle]);
+  const [items, setItems] = useState<TItem[]>(convertedData);
+
   const previousItems = useRef<TItem[]>([]);
   const dragStartItems = useRef<TItem[]>([]);
 
-  // useEffect(() => {
-  //   const convertedItems = data.map((x) => convertDataItem(x));
-  //   setItems(convertedItems);
-  // }, [data, title, subtitle]);
+  useEffect(() => {
+    setItems(convertedData);
+  }, [convertedData]);
 
   const handleDragStart = () => {
     previousItems.current = [...items];
@@ -67,7 +68,7 @@ const SortableList = ({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      {data.map(convertDataItem).map((item, index) => (
+      {items.map((item, index) => (
         <SortableListItem
           key={item.id}
           item={item}

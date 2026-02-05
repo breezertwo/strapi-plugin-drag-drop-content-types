@@ -17,28 +17,23 @@ export const SortModalLogicWrapper = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { mutate: batchUpdateContentList, isPending } = useBatchUpdateContentList(contentType);
+  const { mutate: batchUpdateContentList, isPending } = useBatchUpdateContentList(
+    contentType,
+    locale
+  );
   const { data: settingsData, isLoading: isSettingsLoading } = useFetchSettings(
     contentType,
     isModalOpen
   );
-  const {
-    data: contentListData,
-    isLoading: contentListLoading,
-    isFetching,
-  } = useFetchContentList(contentType, locale);
+  const { data: contentListData, isLoading: contentListLoading } = useFetchContentList(
+    contentType,
+    locale
+  );
 
   const updateContentRanks = async (item: UpdateContentRanksParams) => {
     const { oldIndex, newIndex } = item;
 
     if (oldIndex === newIndex || !contentListData || !settingsData) return;
-
-    if (isPending || isFetching) {
-      return toggleNotification({
-        type: 'warning',
-        message: 'List update pending. Please wait...',
-      });
-    }
 
     try {
       const sortedList = arrayMoveImmutable(contentListData, oldIndex, newIndex);
@@ -61,15 +56,28 @@ export const SortModalLogicWrapper = () => {
         }
       }
 
-      batchUpdateContentList(rankUpdates);
-    } catch (e: any) {
-      console.error('[drag-drop-content-types]: Could not update content type');
-      console.error(e);
+      batchUpdateContentList(
+        {
+          updates: rankUpdates,
+          optimisticData: sortedList,
+        },
+        {
+          onError: (e) => {
+            console.error('[drag-drop-content-types]: Could not update content type');
+            console.error(e);
 
-      toggleNotification({
-        type: 'danger',
-        message: isFetchError(e) ? formatAPIError(e) : 'An error occurred. See console for details',
-      });
+            toggleNotification({
+              type: 'danger',
+              message: isFetchError(e)
+                ? formatAPIError(e)
+                : 'Failed to update order. Changes have been reverted.',
+            });
+          },
+        }
+      );
+    } catch (e) {
+      console.error('[drag-drop-content-types]: Could not prepare update');
+      console.error(e);
     }
   };
 
