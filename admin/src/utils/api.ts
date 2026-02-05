@@ -81,6 +81,7 @@ export const useFetchContentList = (contentType: string, locale?: string) => {
     const result = await get<GetPageEntriesResponse[]>(
       `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`
     );
+
     return result.data || [];
   };
 

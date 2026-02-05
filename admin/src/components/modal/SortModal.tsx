@@ -73,74 +73,76 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
           {status === 'loading' ? <Loader /> : <Drag />}
         </IconButton>
       </Modal.Trigger>
-      <Modal.Content>
-        <Modal.Header>
-          <Modal.Title>
-            {formatMessage({
-              id: getTranslation('plugin.modal.header.title'),
-            })}
-          </Modal.Title>
-        </Modal.Header>
-        <Box maxHeight="calc(100vh - 200px)" overflow="auto" padding={4}>
-          <SortableList
-            data={data}
-            onSortEnd={onSortEnd}
-            selectedItemId={selectedItemId}
-            onItemSelect={(id) => {
-              setSelectedItemId(id);
-            }}
-            settings={settings}
-          />
-        </Box>
-        <Modal.Footer>
-          <Flex justifyContent="flex-end" width="100%" minHeight="32px">
-            {selectedItemId && selectedItemId !== -1 && (
-              <Flex gap={2}>
-                <Button
-                  variant="secondary"
-                  size="S"
-                  startIcon={<CaretUp />}
-                  onClick={() => handleMoveItem(selectedItemId, 'top')}
-                  disabled={data.findIndex((item) => item.id === selectedItemId) === 0}
-                >
-                  To Top
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="S"
-                  startIcon={<ArrowUp />}
-                  onClick={() => handleMoveItem(selectedItemId, 'up')}
-                  disabled={data.findIndex((item) => item.id === selectedItemId) === 0}
-                >
-                  Up
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="S"
-                  startIcon={<ArrowDown />}
-                  onClick={() => handleMoveItem(selectedItemId, 'down')}
-                  disabled={
-                    data.findIndex((item) => item.id === selectedItemId) === data.length - 1
-                  }
-                >
-                  Down
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="S"
-                  startIcon={<CaretDown />}
-                  onClick={() => handleMoveItem(selectedItemId, 'bottom')}
-                  disabled={
-                    data.findIndex((item) => item.id === selectedItemId) === data.length - 1
-                  }
-                >
-                  To Bottom
-                </Button>
-              </Flex>
-            )}
-          </Flex>
-        </Modal.Footer>
-      </Modal.Content>
+      {status !== 'loading' && (
+        <Modal.Content>
+          <Modal.Header>
+            <Modal.Title>
+              {formatMessage({
+                id: getTranslation('plugin.modal.header.title'),
+              })}
+            </Modal.Title>
+          </Modal.Header>
+          <Box maxHeight="calc(100vh - 200px)" overflow="auto" padding={4}>
+            <SortableList
+              data={data}
+              onSortEnd={onSortEnd}
+              selectedItemId={selectedItemId}
+              onItemSelect={(id) => {
+                setSelectedItemId(id);
+              }}
+              settings={settings}
+            />
+          </Box>
+          <Modal.Footer>
+            <Flex justifyContent="flex-end" width="100%" minHeight="32px">
+              {selectedItemId && selectedItemId !== -1 && (
+                <Flex gap={2}>
+                  <Button
+                    variant="secondary"
+                    size="S"
+                    startIcon={<CaretUp />}
+                    onClick={() => handleMoveItem(selectedItemId, 'top')}
+                    disabled={data.findIndex((item) => item.id === selectedItemId) === 0}
+                  >
+                    To Top
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="S"
+                    startIcon={<ArrowUp />}
+                    onClick={() => handleMoveItem(selectedItemId, 'up')}
+                    disabled={data.findIndex((item) => item.id === selectedItemId) === 0}
+                  >
+                    Up
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="S"
+                    startIcon={<ArrowDown />}
+                    onClick={() => handleMoveItem(selectedItemId, 'down')}
+                    disabled={
+                      data.findIndex((item) => item.id === selectedItemId) === data.length - 1
+                    }
+                  >
+                    Down
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="S"
+                    startIcon={<CaretDown />}
+                    onClick={() => handleMoveItem(selectedItemId, 'bottom')}
+                    disabled={
+                      data.findIndex((item) => item.id === selectedItemId) === data.length - 1
+                    }
+                  >
+                    To Bottom
+                  </Button>
+                </Flex>
+              )}
+            </Flex>
+          </Modal.Footer>
+        </Modal.Content>
+      )}
     </Modal.Root>
   );
 };
