@@ -133,8 +133,14 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
         populate: ["localizations"],
       });
 
+      if (!allLocalizations) {
+        continue;
+      }
+
+      // `localizations` is only present when the i18n plugin is installed; the query
+      // engine silently drops the populate key otherwise.
       const { localizations, ...origin } = allLocalizations;
-      for (const entry of [origin, ...localizations]) {
+      for (const entry of [origin, ...(localizations ?? [])]) {
         const updatedEntry = await strapi.db.query(contentType).update({
           where: { id: entry.id },
           data: {
