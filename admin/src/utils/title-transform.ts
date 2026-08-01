@@ -1,5 +1,5 @@
 const ellipsis = (str: string, num: number = str.length, ellipsisStr = '...') =>
-  str.length >= num
+  str.length > num
     ? str.slice(0, num >= ellipsisStr.length ? num - ellipsisStr.length : num) + ellipsisStr
     : str;
 
@@ -11,7 +11,7 @@ export function getSubtitle(
 ) {
   try {
     if (subTitleField && entry[subTitleField]) {
-      if (entry[subTitleField].constructor.name == 'Array') {
+      if (Array.isArray(entry[subTitleField])) {
         if (entry[subTitleField].length > 0) {
           return ellipsis(entry[subTitleField][0][titleField], ellipsisCount ?? 500);
         }

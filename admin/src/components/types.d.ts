@@ -23,10 +23,6 @@ export interface SortableListItemProps {
   subtitle: string;
 }
 
-export interface QueryParams {
-  'plugins[i18n][locale]': string;
-}
-
 export interface ContentTypeResponse {
   results: { id: number }[];
 }

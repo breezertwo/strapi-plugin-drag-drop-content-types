@@ -126,8 +126,13 @@ const getOrderedItems = async (
     select: [...new Set(select)],
   })) as ContentQueryResponse[];
 
+  // Unranked entries go last, and documentId breaks ties so equal or missing
+  // ranks still produce a stable order.
+  const rankOf = (item: Record<string, any>) =>
+    typeof item[rankFieldName] === 'number' ? item[rankFieldName] : Number.MAX_SAFE_INTEGER;
+
   const byRank = (a: Record<string, any>, b: Record<string, any>) =>
-    (a[rankFieldName] ?? Infinity) - (b[rankFieldName] ?? Infinity);
+    rankOf(a) - rankOf(b) || String(a.documentId).localeCompare(String(b.documentId));
 
   const i18nOptions = schema.pluginOptions?.['i18n'] as { localized?: boolean } | undefined;
   if (i18nOptions?.localized !== true) {

@@ -1,5 +1,10 @@
 import { arrayMoveImmutable } from 'array-move';
-import { useNotification, useAPIErrorHandler, isFetchError } from '@strapi/strapi/admin';
+import {
+  useNotification,
+  useAPIErrorHandler,
+  isFetchError,
+  unstable_useContentManagerContext,
+} from '@strapi/strapi/admin';
 import { useQueryParams } from '../../utils/useQueryParams';
 import type { SortModalStatus, UpdateContentRanksParams } from '../types';
 import { SortModal } from './SortModal';
@@ -16,9 +21,8 @@ export const SortModalLogicWrapper = () => {
   const { toggleNotification } = useNotification();
   const { formatAPIError } = useAPIErrorHandler();
 
-  const paths = window.location.pathname.split('/');
-  const contentType = paths[paths.length - 1];
-  const locale = queryParams?.['plugins[i18n][locale]'];
+  const { model: contentType } = unstable_useContentManagerContext();
+  const locale = queryParams.get('plugins[i18n][locale]') ?? undefined;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
