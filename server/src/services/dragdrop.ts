@@ -49,21 +49,29 @@ const applyRanks = async (
   const knex = strapi.db.connection;
   const entries = [...ranksByDocumentId.entries()];
 
+  if (entries.some(([, rank]) => !Number.isInteger(rank))) {
+    throw new Error(`Refusing to write non-integer ranks to '${contentType}'`);
+  }
+
   await strapi.db.transaction(async ({ trx }) => {
     for (let i = 0; i < entries.length; i += RANK_UPDATE_CHUNK_SIZE) {
       const chunk = entries.slice(i, i + RANK_UPDATE_CHUNK_SIZE);
-      const cases = chunk.map(() => 'WHEN ? THEN ?').join(' ');
-      const bindings = chunk.flatMap(([documentId, rank]) => [documentId, rank]);
+
+      // Ranks are inlined rather than bound: Postgres types a bound parameter in a
+      // THEN branch as text, which will not assign to a numeric rank column. They
+      // are list positions generated above and asserted to be integers.
+      const cases = chunk.map(([, rank]) => `WHEN ? THEN ${rank}`).join(' ');
+      const documentIds = chunk.map(([documentId]) => documentId);
 
       // Matching on documentId rewrites every locale and both draft and published
       // rows of a document in one statement.
       await knex(meta.tableName)
         .transacting(trx)
-        .whereIn(
-          documentIdColumn,
-          chunk.map(([documentId]) => documentId)
-        )
-        .update(rankColumn, knex.raw(`CASE ?? ${cases} END`, [documentIdColumn, ...bindings]));
+        .whereIn(documentIdColumn, documentIds)
+        .update(
+          rankColumn,
+          knex.raw(`CASE ?? ${cases} ELSE ?? END`, [documentIdColumn, ...documentIds, rankColumn])
+        );
     }
   });
 };
