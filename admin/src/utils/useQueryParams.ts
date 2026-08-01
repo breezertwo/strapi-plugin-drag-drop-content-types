@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { QueryParams } from "../components/types";
+import { useEffect, useState } from 'react';
+import { QueryParams } from '../components/types';
 
 const readQueryParams = () =>
   new Proxy(new URLSearchParams(window.location.search), {

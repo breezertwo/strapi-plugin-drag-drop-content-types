@@ -2,32 +2,25 @@ import type { Core } from '@strapi/strapi';
 import type * as StrapiTypes from '@strapi/types/dist';
 import type z from 'zod';
 import type { PluginSettingsResponse } from './settings';
-import type { SortIndexRequestSchema } from '../controllers/dragdrop';
+import type { MoveRequestSchema, SortIndexRequestSchema } from '../controllers/dragdrop';
 
 export interface SortIndexParams extends z.infer<typeof SortIndexRequestSchema> {
   rankFieldName: string;
 }
 
-export interface PlaceholderItem {
-  id: number;
-  isPlaceholder: true;
-  sourceLocale: string;
-  [key: string]: any;
+export interface MoveParams extends z.infer<typeof MoveRequestSchema> {
+  rankFieldName: string;
 }
 
 export interface SortIndexItem {
   id: number;
+  documentId: string;
   isPlaceholder?: boolean;
   sourceLocale?: string;
   [key: string]: any;
 }
 
-export interface RankUpdate {
-  id: number;
-  rank: number;
-}
-
-type ContentQueryResponse = { locale: string | null; id: string; documentId: string };
+type ContentQueryResponse = { locale: string | null; id: number; documentId: string };
 
 // Keeps the bound parameter count of a single bulk statement below the SQLite ceiling.
 const RANK_UPDATE_CHUNK_SIZE = 200;
@@ -83,119 +76,124 @@ const getDefaultLocale = async (strapi: Core.Strapi): Promise<string | undefined
   return strapi.plugin('i18n').service('locales').getDefaultLocale();
 };
 
-const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
-  async sortIndex({ contentType, rankFieldName, locale }: SortIndexParams) {
-    try {
-      const schema = strapi.contentTypes[contentType as StrapiTypes.UID.ContentType];
+const getOrderedItems = async (
+  strapi: Core.Strapi,
+  { contentType, rankFieldName, locale }: SortIndexParams
+): Promise<SortIndexItem[]> => {
+  const schema = strapi.contentTypes[contentType as StrapiTypes.UID.ContentType];
 
-      if (!schema) {
-        return [];
+  if (!schema?.attributes?.[rankFieldName]) {
+    return [];
+  }
+
+  const hasDraftAndPublish = schema.options?.draftAndPublish === true;
+
+  const allLocalizations = (await strapi.db.query(contentType).findMany({
+    where: hasDraftAndPublish ? { publishedAt: { $eq: null } } : {},
+  })) as ContentQueryResponse[];
+
+  const byRank = (a: Record<string, any>, b: Record<string, any>) =>
+    (a[rankFieldName] ?? Infinity) - (b[rankFieldName] ?? Infinity);
+
+  const i18nOptions = schema.pluginOptions?.['i18n'] as { localized?: boolean } | undefined;
+  if (i18nOptions?.localized !== true) {
+    return [...allLocalizations].sort(byRank) as SortIndexItem[];
+  }
+
+  const targetLocale = locale ?? (await getDefaultLocale(strapi));
+  if (!targetLocale) {
+    return [];
+  }
+
+  const localeGroups = allLocalizations.reduce<{ [locale: string]: ContentQueryResponse[] }>(
+    (acc, item) => {
+      const { locale } = item;
+      if (locale === null) {
+        return acc;
       }
-
-      if (!schema.attributes?.[rankFieldName]) {
-        return [];
+      if (!acc[locale]) {
+        acc[locale] = [];
       }
+      acc[locale].push(item);
+      return acc;
+    },
+    {}
+  );
 
-      const hasDraftAndPublish = schema.options?.draftAndPublish === true;
+  if (!localeGroups[targetLocale]) {
+    return [];
+  }
 
-      const allLocalizations = (await strapi.db.query(contentType).findMany({
-        where: hasDraftAndPublish ? { publishedAt: { $eq: null } } : {},
-      })) as ContentQueryResponse[];
+  const allUniqueItems = new Map<string, SortIndexItem>();
+  localeGroups[targetLocale].forEach((item) => {
+    allUniqueItems.set(item.documentId, item as SortIndexItem);
+  });
 
-      const byRank = (a: Record<string, any>, b: Record<string, any>) =>
-        (a[rankFieldName] ?? Infinity) - (b[rankFieldName] ?? Infinity);
-
-      const i18nOptions = schema.pluginOptions?.['i18n'] as { localized?: boolean } | undefined;
-      const isLocalized = i18nOptions?.localized === true;
-      if (!isLocalized) {
-        return [...allLocalizations].sort(byRank);
-      }
-
-      const targetLocale = locale ?? (await getDefaultLocale(strapi));
-      if (!targetLocale) {
-        return [];
-      }
-
-      // Group by locale
-      const localeGroups = allLocalizations.reduce<{ [locale: string]: ContentQueryResponse[] }>(
-        (acc, item) => {
-          const { locale } = item;
-          if (locale === null) {
-            return acc;
-          }
-          if (!acc[locale]) {
-            acc[locale] = [];
-          }
-          acc[locale].push(item);
-          return acc;
-        },
-        {}
-      );
-
-      if (!localeGroups[targetLocale]) {
-        return [];
-      }
-
-      const currentItemsMap = new Map();
-      localeGroups[targetLocale].forEach((item: any) => {
-        currentItemsMap.set(item.documentId, item);
-      });
-
-      // Find all unique items across locales
-      const allUniqueItems = currentItemsMap;
-      Object.entries(localeGroups).forEach(([localeKey, items]) => {
-        items.forEach((item: any) => {
-          if (!allUniqueItems.has(item.documentId)) {
-            allUniqueItems.set(item.documentId, {
-              ...item,
-              sourceLocale: localeKey,
-              isPlaceholder: true,
-            });
-          }
+  // Entries that exist in other locales only are kept in the list as read-only
+  // placeholders so the ranks shared across locales stay consistent.
+  Object.entries(localeGroups).forEach(([localeKey, items]) => {
+    items.forEach((item) => {
+      if (!allUniqueItems.has(item.documentId)) {
+        allUniqueItems.set(item.documentId, {
+          ...item,
+          sourceLocale: localeKey,
+          isPlaceholder: true,
         });
-      });
+      }
+    });
+  });
 
-      const sortedAllItems = Array.from(allUniqueItems.values()).sort(byRank);
+  return Array.from(allUniqueItems.values()).sort(byRank);
+};
 
-      return sortedAllItems;
-    } catch (err) {
-      console.error('Error in sortIndex:', err);
-      return [];
-    }
+const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
+  async sortIndex(params: SortIndexParams) {
+    return getOrderedItems(strapi, params);
   },
 
-  async batchUpdate(
+  async move(
     config: PluginSettingsResponse,
-    updates: RankUpdate[],
-    contentType: StrapiTypes.UID.CollectionType
+    { contentType, rankFieldName, locale, id, newIndex }: MoveParams
   ) {
-    const sortFieldName = config.body.rank;
-    const ids = updates.map((update) => update.id);
+    const items = await getOrderedItems(strapi, { contentType, rankFieldName, locale });
 
-    const rows = (await strapi.db.query(contentType).findMany({
-      where: { id: { $in: ids } },
-      select: ['id', 'documentId'],
-    })) as { id: number; documentId: string }[];
-
-    const documentIdById = new Map(rows.map((row) => [row.id, row.documentId]));
-
-    const ranksByDocumentId = new Map<string, number>();
-    for (const update of updates) {
-      const documentId = documentIdById.get(update.id);
-      if (documentId) {
-        ranksByDocumentId.set(documentId, update.rank);
-      }
+    const oldIndex = items.findIndex((item) => item.id === id);
+    if (oldIndex === -1) {
+      return [];
     }
+
+    const targetIndex = Math.min(Math.max(newIndex, 0), items.length - 1);
+
+    const reordered = [...items];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+
+    // Ranks are rewritten to match list positions, which also normalises entries
+    // that were never ranked or whose ranks left gaps.
+    const ranksByDocumentId = new Map<string, number>();
+    const changedIds: number[] = [];
+
+    reordered.forEach((item, index) => {
+      if (item[rankFieldName] !== index) {
+        ranksByDocumentId.set(item.documentId, index);
+        changedIds.push(item.id);
+      }
+    });
 
     if (ranksByDocumentId.size === 0) {
       return [];
     }
 
-    await applyRanks(strapi, contentType, sortFieldName, ranksByDocumentId);
+    await applyRanks(
+      strapi,
+      contentType as StrapiTypes.UID.CollectionType,
+      rankFieldName,
+      ranksByDocumentId
+    );
 
     if (config.body.triggerWebhooks) {
       const updatedEntries = await strapi.db.query(contentType).findMany({
-        where: { id: { $in: [...documentIdById.keys()] } },
+        where: { id: { $in: changedIds } },
       });
       const model = contentType.split('.').pop();
 
@@ -209,7 +207,7 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
       );
     }
 
-    return updates.filter((update) => documentIdById.has(update.id));
+    return [...ranksByDocumentId.entries()].map(([documentId, rank]) => ({ documentId, rank }));
   },
 });
 

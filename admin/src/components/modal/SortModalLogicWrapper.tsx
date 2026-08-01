@@ -3,7 +3,7 @@ import { useNotification, useAPIErrorHandler, isFetchError } from '@strapi/strap
 import { useQueryParams } from '../../utils/useQueryParams';
 import type { UpdateContentRanksParams } from '../types';
 import { SortModal } from './SortModal';
-import { useBatchUpdateContentList, useFetchContentList, useFetchSettings } from '../../utils/api';
+import { useMoveContentItem, useFetchContentList, useFetchSettings } from '../../utils/api';
 import { useState } from 'react';
 
 export const SortModalLogicWrapper = () => {
@@ -17,10 +17,7 @@ export const SortModalLogicWrapper = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { mutate: batchUpdateContentList, isPending } = useBatchUpdateContentList(
-    contentType,
-    locale
-  );
+  const { mutate: moveContentItem } = useMoveContentItem(contentType, locale);
   const { data: settingsData, isLoading: isSettingsLoading } = useFetchSettings(
     contentType,
     isModalOpen
@@ -35,50 +32,29 @@ export const SortModalLogicWrapper = () => {
 
     if (oldIndex === newIndex || !contentListData || !settingsData) return;
 
-    try {
-      const sortedList = arrayMoveImmutable(contentListData, oldIndex, newIndex);
+    const movedItem = contentListData[oldIndex];
+    if (!movedItem) return;
 
-      const rankUpdates = [];
-      let rankHasChanged = false;
+    moveContentItem(
+      {
+        id: movedItem.id,
+        newIndex,
+        optimisticData: arrayMoveImmutable(contentListData, oldIndex, newIndex),
+      },
+      {
+        onError: (e) => {
+          console.error('[drag-drop-content-types]: Could not update content type');
+          console.error(e);
 
-      for (let i = 0; i < sortedList.length; i++) {
-        const newRank = i;
-
-        if (sortedList[i].id != contentListData[i].id) {
-          rankUpdates.push({
-            id: sortedList[i].id,
-            rank: newRank,
+          toggleNotification({
+            type: 'danger',
+            message: isFetchError(e)
+              ? formatAPIError(e)
+              : 'Failed to update order. Changes have been reverted.',
           });
-
-          rankHasChanged = true;
-        } else if (rankHasChanged) {
-          break;
-        }
-      }
-
-      batchUpdateContentList(
-        {
-          updates: rankUpdates,
-          optimisticData: sortedList,
         },
-        {
-          onError: (e) => {
-            console.error('[drag-drop-content-types]: Could not update content type');
-            console.error(e);
-
-            toggleNotification({
-              type: 'danger',
-              message: isFetchError(e)
-                ? formatAPIError(e)
-                : 'Failed to update order. Changes have been reverted.',
-            });
-          },
-        }
-      );
-    } catch (e) {
-      console.error('[drag-drop-content-types]: Could not prepare update');
-      console.error(e);
-    }
+      }
+    );
   };
 
   const getStatus = () => {

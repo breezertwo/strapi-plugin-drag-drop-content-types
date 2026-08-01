@@ -1,8 +1,8 @@
-import { useFetchClient, useNotification } from "@strapi/strapi/admin";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ContentTypeConfigResponse, GetPageEntriesResponse } from "../components/types";
-import type { PluginSettingsResponse } from "../../../server/src/services/settings";
-import { useIntl } from "react-intl";
+import { useFetchClient, useNotification } from '@strapi/strapi/admin';
+import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ContentTypeConfigResponse, GetPageEntriesResponse } from '../components/types';
+import type { PluginSettingsResponse } from '../../../server/src/services/settings';
+import { useIntl } from 'react-intl';
 
 export const queryClient = new QueryClient();
 
@@ -21,7 +21,7 @@ export const useFetchSettings = (contentType: string, enabled = true, fallback =
 
     if (fetchedSettings.title.length === 0 && fallback) {
       const { data: contentTypeConfig } = await get<ContentTypeConfigResponse>(
-        `/content-manager/content-types/${contentType}/configuration`,
+        `/content-manager/content-types/${contentType}/configuration`
       );
 
       fetchedSettings.title = contentTypeConfig.data.contentType?.settings.mainField;
@@ -30,7 +30,7 @@ export const useFetchSettings = (contentType: string, enabled = true, fallback =
     return fetchedSettings;
   };
 
-  return useQuery({ queryKey: ["fetch_settings", contentType], queryFn: fetchSettings, enabled });
+  return useQuery({ queryKey: ['fetch_settings', contentType], queryFn: fetchSettings, enabled });
 };
 
 export const useUpdateSettings = () => {
@@ -53,14 +53,14 @@ export const useUpdateSettings = () => {
   return useMutation({
     mutationFn: updateSettings,
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["fetch_settings"] });
+      queryClient.invalidateQueries({ queryKey: ['fetch_settings'] });
     },
     onSuccess: () => {
       toggleNotification({
-        type: "success",
+        type: 'success',
         message: formatMessage({
-          id: "plugin.settings.updated",
-          defaultMessage: "Settings successfully updated",
+          id: 'plugin.settings.updated',
+          defaultMessage: 'Settings successfully updated',
         }),
       });
     },
@@ -73,59 +73,59 @@ export const useFetchContentList = (contentType: string, locale?: string) => {
   const fetchContentList = async () => {
     const sortIndexParam = new URLSearchParams({ contentType });
     if (locale) {
-      sortIndexParam.set("locale", locale);
+      sortIndexParam.set('locale', locale);
     }
 
     const result = await get<GetPageEntriesResponse[]>(
-      `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`,
+      `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`
     );
 
     return result.data || [];
   };
 
   return useQuery({
-    queryKey: ["fetch_content_list", contentType, locale],
+    queryKey: ['fetch_content_list', contentType, locale],
     queryFn: fetchContentList,
   });
 };
 
-export const useBatchUpdateContentList = (contentType: string, locale?: string) => {
+export const useMoveContentItem = (contentType: string, locale?: string) => {
   const { put } = useFetchClient();
   const queryClient = useQueryClient();
 
-  const batchUpdateContentList = async (params: {
-    updates: {
-      id: number;
-      rank: number;
-    }[];
+  const moveContentItem = async (params: {
+    id: number;
+    newIndex: number;
     optimisticData: GetPageEntriesResponse[];
   }) => {
-    await put("/drag-drop-content-types/batch-update", {
+    await put('/drag-drop-content-types/move', {
       contentType,
-      updates: params.updates,
+      id: params.id,
+      newIndex: params.newIndex,
+      locale,
     });
   };
 
   return useMutation({
-    mutationFn: batchUpdateContentList,
+    mutationFn: moveContentItem,
     onMutate: async (params) => {
-      await queryClient.cancelQueries({ queryKey: ["fetch_content_list", contentType, locale] });
+      await queryClient.cancelQueries({ queryKey: ['fetch_content_list', contentType, locale] });
       const previousData = queryClient.getQueryData<GetPageEntriesResponse[]>([
-        "fetch_content_list",
+        'fetch_content_list',
         contentType,
         locale,
       ]);
 
-      queryClient.setQueryData(["fetch_content_list", contentType, locale], params.optimisticData);
+      queryClient.setQueryData(['fetch_content_list', contentType, locale], params.optimisticData);
       return { previousData };
     },
     onError: (_err, _params, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(["fetch_content_list", contentType, locale], context.previousData);
+        queryClient.setQueryData(['fetch_content_list', contentType, locale], context.previousData);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["fetch_content_list", contentType, locale] });
+      queryClient.invalidateQueries({ queryKey: ['fetch_content_list', contentType, locale] });
     },
   });
 };

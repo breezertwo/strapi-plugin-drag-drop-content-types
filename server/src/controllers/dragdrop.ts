@@ -8,14 +8,11 @@ export const SortIndexRequestSchema = z.object({
   locale: z.string().optional(),
 });
 
-export const BatchUpdateRequestSchema = z.object({
+export const MoveRequestSchema = z.object({
   contentType: z.string(),
-  updates: z.array(
-    z.object({
-      id: z.number(),
-      rank: z.number(),
-    })
-  ),
+  id: z.number().int(),
+  newIndex: z.number().int().min(0),
+  locale: z.string().optional(),
 });
 
 const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
@@ -39,16 +36,19 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
-  async batchUpdate(ctx: Context) {
+  async move(ctx: Context) {
     const settingService = strapi.plugin('drag-drop-content-types').service('settings');
     const dragdropService = strapi.plugin('drag-drop-content-types').service('dragdrop');
 
     try {
       const config: PluginSettingsResponse = await settingService.getSettings();
-      const payload = await BatchUpdateRequestSchema.parseAsync(ctx.request.body);
+      const payload = await MoveRequestSchema.parseAsync(ctx.request.body);
 
       try {
-        ctx.body = await dragdropService.batchUpdate(config, payload.updates, payload.contentType);
+        ctx.body = await dragdropService.move(config, {
+          ...payload,
+          rankFieldName: config.body.rank,
+        });
       } catch (err) {
         ctx.throw(500, err);
       }

@@ -17,8 +17,8 @@ export default {
     },
     {
       method: 'PUT',
-      path: '/batch-update',
-      handler: 'dragdrop.batchUpdate',
+      path: '/move',
+      handler: 'dragdrop.move',
       config: {
         policies: [
           'admin::isAuthenticatedAdmin',
