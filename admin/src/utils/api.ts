@@ -78,7 +78,13 @@ export const useIsSortable = (contentType: string) => {
     return data.sortable;
   };
 
-  return useQuery({ queryKey: ['is_sortable', contentType], queryFn: fetchIsSortable });
+  return useQuery({
+    queryKey: ['is_sortable', contentType],
+    queryFn: fetchIsSortable,
+    enabled: !!contentType,
+    // Sortability only depends on the schema, which cannot change without a restart.
+    staleTime: Infinity,
+  });
 };
 
 export const useFetchContentList = (contentType: string, locale?: string, enabled = true) => {
