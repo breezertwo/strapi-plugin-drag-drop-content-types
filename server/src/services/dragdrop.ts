@@ -76,9 +76,34 @@ const getDefaultLocale = async (strapi: Core.Strapi): Promise<string | undefined
   return strapi.plugin('i18n').service('locales').getDefaultLocale();
 };
 
+const NON_SELECTABLE_TYPES = ['relation', 'component', 'dynamiczone', 'media'];
+
+const getDisplayFields = async (
+  strapi: Core.Strapi,
+  schema: StrapiTypes.Struct.ContentTypeSchema,
+  config: PluginSettingsResponse
+) => {
+  let titleField = config.body.title;
+
+  if (!titleField) {
+    const contentTypeConfig = await strapi
+      .plugin('content-manager')
+      .service('content-types')
+      .findConfiguration(schema);
+
+    titleField = contentTypeConfig?.settings?.mainField;
+  }
+
+  return [titleField, config.body.subtitle].filter((field) => {
+    const attribute = field ? schema.attributes?.[field] : undefined;
+    return !!attribute && !NON_SELECTABLE_TYPES.includes(attribute.type);
+  }) as string[];
+};
+
 const getOrderedItems = async (
   strapi: Core.Strapi,
-  { contentType, rankFieldName, locale }: SortIndexParams
+  { contentType, rankFieldName, locale }: SortIndexParams,
+  config?: PluginSettingsResponse
 ): Promise<SortIndexItem[]> => {
   const schema = strapi.contentTypes[contentType as StrapiTypes.UID.ContentType];
 
@@ -88,8 +113,17 @@ const getOrderedItems = async (
 
   const hasDraftAndPublish = schema.options?.draftAndPublish === true;
 
+  const select = [
+    'id',
+    'documentId',
+    rankFieldName,
+    ...(schema.attributes.locale ? ['locale'] : []),
+    ...(config ? await getDisplayFields(strapi, schema, config) : []),
+  ];
+
   const allLocalizations = (await strapi.db.query(contentType).findMany({
     where: hasDraftAndPublish ? { publishedAt: { $eq: null } } : {},
+    select: [...new Set(select)],
   })) as ContentQueryResponse[];
 
   const byRank = (a: Record<string, any>, b: Record<string, any>) =>
@@ -147,8 +181,13 @@ const getOrderedItems = async (
 };
 
 const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
-  async sortIndex(params: SortIndexParams) {
-    return getOrderedItems(strapi, params);
+  isSortable({ contentType, rankFieldName }: { contentType: string; rankFieldName: string }) {
+    const schema = strapi.contentTypes[contentType as StrapiTypes.UID.ContentType];
+    return { sortable: !!schema?.attributes?.[rankFieldName] };
+  },
+
+  async sortIndex(config: PluginSettingsResponse, params: SortIndexParams) {
+    return getOrderedItems(strapi, params, config);
   },
 
   async move(

@@ -8,6 +8,10 @@ export const SortIndexRequestSchema = z.object({
   locale: z.string().optional(),
 });
 
+export const SortableRequestSchema = z.object({
+  contentType: z.string(),
+});
+
 export const MoveRequestSchema = z.object({
   contentType: z.string(),
   id: z.number().int(),
@@ -27,10 +31,26 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
         locale: ctx.query.locale,
       });
 
-      ctx.body = await dragdropService.sortIndex({
+      ctx.body = await dragdropService.sortIndex(config, {
         ...payload,
         rankFieldName: config.body.rank,
       });
+    } catch (err) {
+      ctx.throw(400, err);
+    }
+  },
+
+  async sortable(ctx: Context) {
+    const settingService = strapi.plugin('drag-drop-content-types').service('settings');
+    const dragdropService = strapi.plugin('drag-drop-content-types').service('dragdrop');
+
+    try {
+      const config: PluginSettingsResponse = await settingService.getSettings();
+      const { contentType } = await SortableRequestSchema.parseAsync({
+        contentType: ctx.query.contentType,
+      });
+
+      ctx.body = dragdropService.isSortable({ contentType, rankFieldName: config.body.rank });
     } catch (err) {
       ctx.throw(400, err);
     }

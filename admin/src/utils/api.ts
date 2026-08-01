@@ -67,7 +67,21 @@ export const useUpdateSettings = () => {
   });
 };
 
-export const useFetchContentList = (contentType: string, locale?: string) => {
+export const useIsSortable = (contentType: string) => {
+  const { get } = useFetchClient();
+
+  const fetchIsSortable = async () => {
+    const { data } = await get<{ sortable: boolean }>(
+      `/drag-drop-content-types/sortable?contentType=${encodeURIComponent(contentType)}`
+    );
+
+    return data.sortable;
+  };
+
+  return useQuery({ queryKey: ['is_sortable', contentType], queryFn: fetchIsSortable });
+};
+
+export const useFetchContentList = (contentType: string, locale?: string, enabled = true) => {
   const { get } = useFetchClient();
 
   const fetchContentList = async () => {
@@ -86,6 +100,7 @@ export const useFetchContentList = (contentType: string, locale?: string) => {
   return useQuery({
     queryKey: ['fetch_content_list', contentType, locale],
     queryFn: fetchContentList,
+    enabled,
   });
 };
 

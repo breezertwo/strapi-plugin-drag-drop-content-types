@@ -1,9 +1,14 @@
 import { arrayMoveImmutable } from 'array-move';
 import { useNotification, useAPIErrorHandler, isFetchError } from '@strapi/strapi/admin';
 import { useQueryParams } from '../../utils/useQueryParams';
-import type { UpdateContentRanksParams } from '../types';
+import type { SortModalStatus, UpdateContentRanksParams } from '../types';
 import { SortModal } from './SortModal';
-import { useMoveContentItem, useFetchContentList, useFetchSettings } from '../../utils/api';
+import {
+  useMoveContentItem,
+  useFetchContentList,
+  useFetchSettings,
+  useIsSortable,
+} from '../../utils/api';
 import { useState } from 'react';
 
 export const SortModalLogicWrapper = () => {
@@ -18,13 +23,15 @@ export const SortModalLogicWrapper = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { mutate: moveContentItem } = useMoveContentItem(contentType, locale);
+  const { data: isSortable } = useIsSortable(contentType);
   const { data: settingsData, isLoading: isSettingsLoading } = useFetchSettings(
     contentType,
     isModalOpen
   );
   const { data: contentListData, isLoading: contentListLoading } = useFetchContentList(
     contentType,
-    locale
+    locale,
+    isModalOpen
   );
 
   const updateContentRanks = async (item: UpdateContentRanksParams) => {
@@ -57,8 +64,10 @@ export const SortModalLogicWrapper = () => {
     );
   };
 
-  const getStatus = () => {
-    if (contentListLoading || isSettingsLoading) {
+  const getStatus = (): SortModalStatus => {
+    if (!isSortable) {
+      return 'unavailable';
+    } else if (!isModalOpen || contentListLoading || isSettingsLoading) {
       return 'loading';
     } else if (contentListData && contentListData.length > 0) {
       return 'success';
