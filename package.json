@@ -62,6 +62,7 @@
     "@strapi/design-system": "2.2.3",
     "@strapi/icons": "2.2.3",
     "@strapi/sdk-plugin": "6.1.1",
+    "@strapi/strapi": "^5.51.1",
     "@strapi/typescript-utils": "^5.51.0",
     "@strapi/utils": "^5.51.0",
     "@types/react": "^18",

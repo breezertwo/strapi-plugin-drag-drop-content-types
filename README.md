@@ -2,9 +2,17 @@
 
 Order your content types by rank easily via drag and drop. Simply add a rank field to your content types to get ready for sorting. Supports stable ranks across multiple locales even when a content type is not translated for all locales.
 
-![Plugin Version](https://img.shields.io/badge/version-5.5.0-blue)
-![Strapi Version](https://img.shields.io/badge/strapi-v5.0.0+-green)
-![License](https://img.shields.io/badge/license-MIT-green)
+<center>
+  <a href="https://www.npmjs.com/package/@breezertwo/strapi-plugin-drag-drop-content-types">
+      <img src="https://img.shields.io/npm/v/%40breezertwo%2Fstrapi-plugin-drag-drop-content-types?style=flat-square&color=blue" alt="NPM Version" />
+  </a>
+  <a href="https://github.com/strapi/strapi">
+    <img src="https://img.shields.io/badge/strapi-v5.0.0+-green?style=flat-square" alt="Strapi Version 5+" />
+  </a>
+  <a href="https://github.com/breezertwo/strapi-plugin-drag-drop-content-types/actions/workflows/test.yaml">
+    <img src="https://img.shields.io/github/license/breezertwo/strapi-plugin-drag-drop-content-types" alt="MIT License" />
+  </a>
+</center>
 
 ## ✨ Features
 
