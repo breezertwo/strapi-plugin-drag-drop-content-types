@@ -1,31 +1,32 @@
 import { Flex } from '@strapi/design-system';
-import { Box, Grid, Typography } from '@strapi/design-system';
+import { Typography } from '@strapi/design-system';
 import { Drag } from '@strapi/icons';
-import { CSSProperties, forwardRef, HTMLAttributes } from 'react';
-import { FetchedSettings } from '../types';
+import { forwardRef, HTMLAttributes, memo, useMemo } from 'react';
+import { FetchedSettings, GetPageEntriesResponse } from '../types';
 import { Tooltip } from '@strapi/design-system';
+import { getSubtitle, getTitle } from '../../utils/title-transform';
 
-export type TItem = {
-  id: number;
-  title: string;
-  subtitle: string;
-  isPlaceholder?: boolean;
-  sourceLocale?: string;
-  [key: string]: any;
-};
+export type TItem = GetPageEntriesResponse;
 
 type StyledListItemProps = {
   item: TItem;
   settings: FetchedSettings;
   isDragging?: boolean;
   isSelected?: boolean;
-  onPressItem?: (id: number) => void;
 } & HTMLAttributes<HTMLDivElement>;
 
-export const StyledListItem = forwardRef<HTMLDivElement, StyledListItemProps>(
-  ({ item, isDragging, style, isSelected, onPressItem, settings, ...props }, ref) => {
+const StyledListItemBase = forwardRef<HTMLDivElement, StyledListItemProps>(
+  ({ item, isDragging, style, isSelected, settings, ...props }, ref) => {
     const isPlaceholder = item.isPlaceholder;
     const rankValue = item[settings.rank];
+
+    const { title, subtitle } = useMemo(
+      () => ({
+        title: getTitle(item, settings.title),
+        subtitle: getSubtitle(item, settings.subtitle ?? '', settings.title),
+      }),
+      [item, settings.title, settings.subtitle]
+    );
 
     return (
       <Flex
@@ -55,7 +56,7 @@ export const StyledListItem = forwardRef<HTMLDivElement, StyledListItemProps>(
         </Typography>
         <Flex direction="column" gap={2} alignItems="flex-start">
           <Flex direction="row" alignItems="center" gap={2}>
-            <Typography>{item.title}</Typography>
+            <Typography>{title}</Typography>
             {isPlaceholder && (
               <Tooltip
                 delayDuration={50}
@@ -75,9 +76,11 @@ export const StyledListItem = forwardRef<HTMLDivElement, StyledListItemProps>(
               </Tooltip>
             )}
           </Flex>
-          {item.subtitle && <Typography variant="pi">{item.subtitle}</Typography>}
+          {subtitle && <Typography variant="pi">{subtitle}</Typography>}
         </Flex>
       </Flex>
     );
   }
 );
+
+export const StyledListItem = memo(StyledListItemBase);

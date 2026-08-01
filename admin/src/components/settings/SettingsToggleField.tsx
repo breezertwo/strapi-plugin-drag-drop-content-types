@@ -22,10 +22,8 @@ export const SettingsToggleField = (props: SettingsToggleFieldProps) => {
     required,
     value,
     updateItem,
-    type,
     hasLabel = false,
     hasHint = false,
-    hasTooltip = false,
   } = props;
   const { formatMessage } = useIntl();
   const [hasError, setHasError] = useState(false);
@@ -39,9 +37,6 @@ export const SettingsToggleField = (props: SettingsToggleFieldProps) => {
     ? formatMessage({ id: getTrad(`plugin.settings.${displayName}.label`) })
     : '';
   const hint = hasHint ? formatMessage({ id: getTrad(`plugin.settings.${displayName}.hint`) }) : '';
-  const tooltip = hasTooltip
-    ? formatMessage({ id: getTrad(`plugin.settings.${displayName}.tooltip`) })
-    : '';
 
   return (
     <Field.Root

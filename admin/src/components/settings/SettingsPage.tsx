@@ -1,6 +1,6 @@
 import { Page, Layouts } from '@strapi/strapi/admin';
-import { Flex, Box, Button, Grid, Typography } from '@strapi/design-system';
-import { Information, Check } from '@strapi/icons';
+import { Flex, Box, Button, Grid } from '@strapi/design-system';
+import { Check } from '@strapi/icons';
 import { useIntl } from 'react-intl';
 import { SettingsTextField, SettingsToggleField } from '../../components/settings';
 import { useFetchSettings, useUpdateSettings } from '../../utils/api';
@@ -73,23 +73,17 @@ export const SettingsPage = () => {
             paddingRight={7}
           >
             <Flex direction="column">
-              <Box paddingBottom={6}>
-                <Typography variant="beta">
-                  {formatMessage({ id: getTrad('plugin.settings.field-names') })}
-                </Typography>
-              </Box>
               <Grid.Root gap={6}>
                 {/* rank */}
                 <Grid.Item col={6} s={12}>
                   <Box padding={0} style={{ width: '100%' }}>
                     <SettingsTextField
-                      hasTooltip={true}
-                      hasHint={true}
-                      hasLabel={true}
-                      hasPlaceholder={true}
+                      required
+                      hasHint
+                      hasLabel
+                      hasPlaceholder
                       fieldName="rank"
                       displayName="rank"
-                      required={true}
                       updateItem={onUpdateSettings}
                       value={data?.rank}
                     />
@@ -100,10 +94,9 @@ export const SettingsPage = () => {
                 <Grid.Item col={6} s={12}>
                   <Box padding={0} style={{ width: '100%' }}>
                     <SettingsTextField
-                      hasTooltip={true}
-                      hasHint={true}
-                      hasLabel={true}
-                      hasPlaceholder={true}
+                      hasHint
+                      hasLabel
+                      hasPlaceholder
                       fieldName="title"
                       displayName="title"
                       required={false}
@@ -117,10 +110,9 @@ export const SettingsPage = () => {
                 <Grid.Item col={6} s={12}>
                   <Box padding={0} style={{ width: '100%' }}>
                     <SettingsTextField
-                      hasTooltip={true}
-                      hasHint={true}
-                      hasLabel={true}
-                      hasPlaceholder={true}
+                      hasHint
+                      hasLabel
+                      hasPlaceholder
                       fieldName="subtitle"
                       displayName="subtitle"
                       required={false}
@@ -133,9 +125,8 @@ export const SettingsPage = () => {
                 <Grid.Item col={6} s={12}>
                   <Box padding={0} style={{ width: '100%' }}>
                     <SettingsToggleField
-                      hasTooltip={true}
-                      hasHint={true}
-                      hasLabel={true}
+                      hasHint
+                      hasLabel
                       fieldName="triggerWebhooks"
                       displayName="triggerWebhooks"
                       required={false}

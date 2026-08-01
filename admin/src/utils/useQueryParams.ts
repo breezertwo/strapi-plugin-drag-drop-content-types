@@ -1,17 +1,9 @@
-import { useEffect, useState } from "react";
-import { QueryParams } from "../components/types";
-
-const readQueryParams = () =>
-  new Proxy(new URLSearchParams(window.location.search), {
-    get: (queryParams, prop) => queryParams.get(prop.toString()),
-  }) as unknown as QueryParams;
+import { useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export function useQueryParams() {
-  const [params, setParams] = useState<QueryParams>(readQueryParams);
+  const { search } = useLocation();
+  const queryParams = useMemo(() => new URLSearchParams(search), [search]);
 
-  useEffect(() => {
-    setParams(readQueryParams());
-  }, [window.location.search]);
-
-  return { queryParams: params };
+  return { queryParams };
 }

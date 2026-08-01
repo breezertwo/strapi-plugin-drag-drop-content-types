@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { MoveDirection, SortMenuProps } from '../types';
 import { IconButton } from '@strapi/design-system';
 import { Drag, ArrowUp, ArrowDown, CaretUp, CaretDown, Loader } from '@strapi/icons';
@@ -7,7 +7,7 @@ import { Modal } from '@strapi/design-system';
 import { Button } from '@strapi/design-system';
 import { useIntl } from 'react-intl';
 import { getTranslation } from '../../utils/getTranslation';
-import { Box, Flex } from '@strapi/design-system';
+import { Box, Flex, Typography } from '@strapi/design-system';
 import { useDispatch } from 'react-redux';
 import { adminApi, unstable_useContentManagerContext } from '@strapi/strapi/admin';
 
@@ -17,6 +17,8 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
   const { model } = unstable_useContentManagerContext();
+
+  const handleItemSelect = useCallback((id: number) => setSelectedItemId(id), []);
 
   const handleMoveItem = (id: number, direction: MoveDirection) => {
     const currentIndex = data.findIndex((item) => item.id === id);
@@ -60,20 +62,20 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
         <IconButton
           id="sortable-content-type-plugin--sort-menu-button"
           variant="secondary"
-          disabled={status === 'success' ? false : true}
+          disabled={status === 'unavailable'}
           withTooltip={true}
           label={formatMessage({
             id: getTranslation(
-              status === 'success'
-                ? 'plugin.settings.sortableList.menuIcon'
-                : 'plugin.settings.sortableList.menuIcon.off'
+              status === 'unavailable'
+                ? 'plugin.settings.sortableList.menuIcon.off'
+                : 'plugin.settings.sortableList.menuIcon'
             ),
           })}
         >
-          {status === 'loading' ? <Loader /> : <Drag />}
+          <Drag />
         </IconButton>
       </Modal.Trigger>
-      {status !== 'loading' && (
+      {status !== 'unavailable' && (
         <Modal.Content>
           <Modal.Header>
             <Modal.Title>
@@ -83,19 +85,31 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
             </Modal.Title>
           </Modal.Header>
           <Box maxHeight="calc(100vh - 200px)" overflow="auto" padding={4}>
-            <SortableList
-              data={data}
-              onSortEnd={onSortEnd}
-              selectedItemId={selectedItemId}
-              onItemSelect={(id) => {
-                setSelectedItemId(id);
-              }}
-              settings={settings}
-            />
+            {status === 'loading' && (
+              <Flex justifyContent="center" padding={6}>
+                <Loader />
+              </Flex>
+            )}
+            {status === 'empty' && (
+              <Flex justifyContent="center" padding={6}>
+                <Typography variant="omega" textColor="neutral600">
+                  {formatMessage({ id: getTranslation('plugin.modal.body.empty') })}
+                </Typography>
+              </Flex>
+            )}
+            {status === 'success' && (
+              <SortableList
+                data={data}
+                onSortEnd={onSortEnd}
+                selectedItemId={selectedItemId}
+                onItemSelect={handleItemSelect}
+                settings={settings}
+              />
+            )}
           </Box>
           <Modal.Footer>
             <Flex justifyContent="flex-end" width="100%" minHeight="32px">
-              {selectedItemId && selectedItemId !== -1 && (
+              {status === 'success' && selectedItemId && selectedItemId !== -1 && (
                 <Flex gap={2}>
                   <Button
                     variant="secondary"

@@ -1,7 +1,9 @@
 export type MoveDirection = 'up' | 'down' | 'top' | 'bottom';
 
+export type SortModalStatus = 'unavailable' | 'loading' | 'empty' | 'success';
+
 export interface SortMenuProps {
-  status: 'loading' | 'empty' | 'success';
+  status: SortModalStatus;
   data: GetPageEntriesResponse[];
   onSortEnd: (item: UpdateContentTypeParams) => void;
   onOpenChange?: (open: boolean) => void;
@@ -19,10 +21,6 @@ export interface SortableListProps {
 export interface SortableListItemProps {
   title?: string;
   subtitle: string;
-}
-
-export interface QueryParams {
-  'plugins[i18n][locale]': string;
 }
 
 export interface ContentTypeResponse {

@@ -1,5 +1,5 @@
 import { useSortable } from '@dnd-kit/react/sortable';
-import { HTMLAttributes } from 'react';
+import { HTMLAttributes, memo, useCallback } from 'react';
 import { TItem, StyledListItem } from './StyledListItem';
 import { FetchedSettings } from '../types';
 
@@ -11,20 +11,29 @@ type Props = HTMLAttributes<HTMLDivElement> & {
   onSelectItem?: (id: number) => void;
 };
 
-const SortableListItem = ({ item, index, settings, isSelected, onSelectItem, ...props }: Props) => {
+const SortableListItemBase = ({
+  item,
+  index,
+  settings,
+  isSelected,
+  onSelectItem,
+  ...props
+}: Props) => {
   const { ref, isDragging } = useSortable({
     id: item.id,
     index,
     disabled: item.isPlaceholder,
   });
 
-  const handleClick = (e: React.MouseEvent) => {
-    // Only handle click if not dragging, onSelect is provided, and not a placeholder
-    if (!isDragging && onSelectItem && !item.isPlaceholder) {
-      e.stopPropagation();
-      onSelectItem(isSelected ? -1 : item.id);
-    }
-  };
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging && onSelectItem && !item.isPlaceholder) {
+        e.stopPropagation();
+        onSelectItem(isSelected ? -1 : item.id);
+      }
+    },
+    [isDragging, onSelectItem, item.isPlaceholder, item.id, isSelected]
+  );
 
   return (
     <StyledListItem
@@ -39,4 +48,4 @@ const SortableListItem = ({ item, index, settings, isSelected, onSelectItem, ...
   );
 };
 
-export default SortableListItem;
+export default memo(SortableListItemBase);

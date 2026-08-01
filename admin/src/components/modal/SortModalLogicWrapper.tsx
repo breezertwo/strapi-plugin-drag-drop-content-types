@@ -1,65 +1,59 @@
 import { arrayMoveImmutable } from 'array-move';
-import { useNotification, useAPIErrorHandler, isFetchError } from '@strapi/strapi/admin';
+import {
+  useNotification,
+  useAPIErrorHandler,
+  isFetchError,
+  unstable_useContentManagerContext,
+} from '@strapi/strapi/admin';
 import { useQueryParams } from '../../utils/useQueryParams';
-import type { UpdateContentRanksParams } from '../types';
+import type { SortModalStatus, UpdateContentRanksParams } from '../types';
 import { SortModal } from './SortModal';
-import { useBatchUpdateContentList, useFetchContentList, useFetchSettings } from '../../utils/api';
-import { useState } from 'react';
+import {
+  useMoveContentItem,
+  useFetchContentList,
+  useFetchSettings,
+  useIsSortable,
+} from '../../utils/api';
+import { useCallback, useState } from 'react';
+
+const FALLBACK_SETTINGS = { rank: '', title: '', subtitle: null };
 
 export const SortModalLogicWrapper = () => {
   const { queryParams } = useQueryParams();
   const { toggleNotification } = useNotification();
   const { formatAPIError } = useAPIErrorHandler();
 
-  const paths = window.location.pathname.split('/');
-  const contentType = paths[paths.length - 1];
-  const locale = queryParams?.['plugins[i18n][locale]'];
+  const { model: contentType } = unstable_useContentManagerContext();
+  const locale = queryParams.get('plugins[i18n][locale]') ?? undefined;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { mutate: batchUpdateContentList, isPending } = useBatchUpdateContentList(
-    contentType,
-    locale
-  );
+  const { mutate: moveContentItem } = useMoveContentItem(contentType, locale);
+  const { data: isSortable } = useIsSortable(contentType);
   const { data: settingsData, isLoading: isSettingsLoading } = useFetchSettings(
     contentType,
     isModalOpen
   );
   const { data: contentListData, isLoading: contentListLoading } = useFetchContentList(
     contentType,
-    locale
+    locale,
+    isModalOpen
   );
 
-  const updateContentRanks = async (item: UpdateContentRanksParams) => {
-    const { oldIndex, newIndex } = item;
+  const updateContentRanks = useCallback(
+    (item: UpdateContentRanksParams) => {
+      const { oldIndex, newIndex } = item;
 
-    if (oldIndex === newIndex || !contentListData || !settingsData) return;
+      if (oldIndex === newIndex || !contentListData || !settingsData) return;
 
-    try {
-      const sortedList = arrayMoveImmutable(contentListData, oldIndex, newIndex);
+      const movedItem = contentListData[oldIndex];
+      if (!movedItem) return;
 
-      const rankUpdates = [];
-      let rankHasChanged = false;
-
-      for (let i = 0; i < sortedList.length; i++) {
-        const newRank = i;
-
-        if (sortedList[i].id != contentListData[i].id) {
-          rankUpdates.push({
-            id: sortedList[i].id,
-            rank: newRank,
-          });
-
-          rankHasChanged = true;
-        } else if (rankHasChanged) {
-          break;
-        }
-      }
-
-      batchUpdateContentList(
+      moveContentItem(
         {
-          updates: rankUpdates,
-          optimisticData: sortedList,
+          id: movedItem.id,
+          newIndex,
+          optimisticData: arrayMoveImmutable(contentListData, oldIndex, newIndex),
         },
         {
           onError: (e) => {
@@ -75,14 +69,14 @@ export const SortModalLogicWrapper = () => {
           },
         }
       );
-    } catch (e) {
-      console.error('[drag-drop-content-types]: Could not prepare update');
-      console.error(e);
-    }
-  };
+    },
+    [contentListData, settingsData, moveContentItem, toggleNotification, formatAPIError]
+  );
 
-  const getStatus = () => {
-    if (contentListLoading || isSettingsLoading) {
+  const getStatus = (): SortModalStatus => {
+    if (!isSortable) {
+      return 'unavailable';
+    } else if (!isModalOpen || contentListLoading || isSettingsLoading) {
       return 'loading';
     } else if (contentListData && contentListData.length > 0) {
       return 'success';
@@ -96,14 +90,8 @@ export const SortModalLogicWrapper = () => {
       data={contentListData ?? []}
       status={getStatus()}
       onSortEnd={updateContentRanks}
-      onOpenChange={(open: boolean) => setIsModalOpen(open)}
-      settings={
-        settingsData ?? {
-          rank: '',
-          title: '',
-          subtitle: null,
-        }
-      }
+      onOpenChange={setIsModalOpen}
+      settings={settingsData ?? FALLBACK_SETTINGS}
     />
   );
 };

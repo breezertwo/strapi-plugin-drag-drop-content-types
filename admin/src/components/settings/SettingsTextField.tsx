@@ -10,7 +10,6 @@ interface SettingsTextFieldProps {
   value?: string;
   hasLabel?: boolean;
   hasHint?: boolean;
-  hasTooltip?: boolean;
   hasPlaceholder?: boolean;
   type?: string;
   updateItem: (fieldName: string, value: string) => void;
@@ -26,7 +25,6 @@ export const SettingsTextField = (props: SettingsTextFieldProps) => {
     type,
     hasLabel = false,
     hasHint = false,
-    hasTooltip = false,
     hasPlaceholder = false,
   } = props;
   const { formatMessage } = useIntl();

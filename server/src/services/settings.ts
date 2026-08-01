@@ -1,5 +1,3 @@
-import type { Core } from '@strapi/strapi';
-
 export interface PluginSettingsBody {
   rank: string;
   title: string;
