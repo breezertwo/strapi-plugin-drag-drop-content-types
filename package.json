@@ -1,6 +1,6 @@
 {
   "name": "@breezertwo/strapi-plugin-drag-drop-content-types",
-  "version": "5.4.0",
+  "version": "5.5.0",
   "description": "This plugin adds a drag and drop list that allows you to sort content type entries by rank.",
   "keywords": [
     "content types",
