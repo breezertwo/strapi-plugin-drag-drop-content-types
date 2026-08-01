@@ -1,8 +1,8 @@
-import type { Core } from '@strapi/strapi';
-import type * as StrapiTypes from '@strapi/types/dist';
-import type z from 'zod';
-import type { PluginSettingsResponse } from './settings';
-import type { SortIndexRequestSchema } from '../controllers/dragdrop';
+import type { Core } from "@strapi/strapi";
+import type * as StrapiTypes from "@strapi/types/dist";
+import type z from "zod";
+import type { PluginSettingsResponse } from "./settings";
+import type { SortIndexRequestSchema } from "../controllers/dragdrop";
 
 export interface SortIndexParams extends z.infer<typeof SortIndexRequestSchema> {
   rankFieldName: string;
@@ -27,44 +27,71 @@ export interface RankUpdate {
   rank: number;
 }
 
-type ContentQueryResponse = { locale: string; id: string; documentId: string };
+type ContentQueryResponse = { locale: string | null; id: string; documentId: string };
+
+const getDefaultLocale = async (strapi: Core.Strapi): Promise<string | undefined> => {
+  if (!strapi.plugins?.["i18n"]) {
+    return undefined;
+  }
+
+  return strapi.plugin("i18n").service("locales").getDefaultLocale();
+};
 
 const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
   async sortIndex({ contentType, rankFieldName, locale }: SortIndexParams) {
     try {
-      // Get all available locales for this content type
+      const schema = strapi.contentTypes[contentType as StrapiTypes.UID.ContentType];
+
+      if (!schema) {
+        return [];
+      }
+
+      if (!schema.attributes?.[rankFieldName]) {
+        return [];
+      }
+
+      const hasDraftAndPublish = schema.options?.draftAndPublish === true;
+
       const allLocalizations = (await strapi.db.query(contentType).findMany({
-        where: {
-          publishedAt: {
-            $eq: null,
-          },
-        },
+        where: hasDraftAndPublish ? { publishedAt: { $eq: null } } : {},
       })) as ContentQueryResponse[];
+
+      const byRank = (a: Record<string, any>, b: Record<string, any>) =>
+        (a[rankFieldName] ?? Infinity) - (b[rankFieldName] ?? Infinity);
+
+      const i18nOptions = schema.pluginOptions?.["i18n"] as { localized?: boolean } | undefined;
+      const isLocalized = i18nOptions?.localized === true;
+      if (!isLocalized) {
+        return [...allLocalizations].sort(byRank);
+      }
+
+      const targetLocale = locale ?? (await getDefaultLocale(strapi));
+      if (!targetLocale) {
+        return [];
+      }
 
       // Group by locale
       const localeGroups = allLocalizations.reduce<{ [locale: string]: ContentQueryResponse[] }>(
         (acc, item) => {
           const { locale } = item;
+          if (locale === null) {
+            return acc;
+          }
           if (!acc[locale]) {
             acc[locale] = [];
           }
           acc[locale].push(item);
           return acc;
         },
-        {}
+        {},
       );
 
-      if (!localeGroups[locale]) {
-        return [];
-      }
-
-      if (localeGroups[locale][0][rankFieldName] === undefined) {
-        // console.info(`No rank field '${rankFieldName}' on content type '${contentType}'`);
+      if (!localeGroups[targetLocale]) {
         return [];
       }
 
       const currentItemsMap = new Map();
-      localeGroups[locale].forEach((item: any) => {
+      localeGroups[targetLocale].forEach((item: any) => {
         currentItemsMap.set(item.documentId, item);
       });
 
@@ -82,15 +109,11 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
         });
       });
 
-      const sortedAllItems = Array.from(allUniqueItems.values()).sort((a, b) => {
-        const rankA = a[rankFieldName] ?? Infinity;
-        const rankB = b[rankFieldName] ?? Infinity;
-        return rankA - rankB;
-      });
+      const sortedAllItems = Array.from(allUniqueItems.values()).sort(byRank);
 
       return sortedAllItems;
     } catch (err) {
-      console.error('Error in sortIndex:', err);
+      console.error("Error in sortIndex:", err);
       return [];
     }
   },
@@ -98,7 +121,7 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
   async batchUpdate(
     config: PluginSettingsResponse,
     updates: RankUpdate[],
-    contentType: StrapiTypes.UID.CollectionType
+    contentType: StrapiTypes.UID.CollectionType,
   ) {
     const shouldTriggerWebhooks = config.body.triggerWebhooks;
     const sortFieldName = config.body.rank;
@@ -107,7 +130,7 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
     for (const update of updates) {
       const allLocalizations = await strapi.db.query(contentType).findOne({
         where: { id: update.id },
-        populate: ['localizations'],
+        populate: ["localizations"],
       });
 
       const { localizations, ...origin } = allLocalizations;
@@ -126,15 +149,15 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
 
       if (shouldTriggerWebhooks) {
         const info: Record<string, unknown> = {
-          model: contentType.split('.').at(-1),
+          model: contentType.split(".").pop(),
           entry: {
             id: origin.id,
             ...origin,
           },
         };
 
-        await strapi.get('webhookRunner').executeListener({
-          event: 'entry.update',
+        await strapi.get("webhookRunner").executeListener({
+          event: "entry.update",
           info,
         });
       }

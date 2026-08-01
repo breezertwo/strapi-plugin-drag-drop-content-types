@@ -5,7 +5,7 @@ import { PluginSettingsResponse } from 'src/services/settings';
 
 export const SortIndexRequestSchema = z.object({
   contentType: z.string(),
-  locale: z.string(),
+  locale: z.string().optional(),
 });
 
 export const BatchUpdateRequestSchema = z.object({
