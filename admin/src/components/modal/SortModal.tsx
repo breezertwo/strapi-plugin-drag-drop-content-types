@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { MoveDirection, SortMenuProps } from '../types';
 import { IconButton } from '@strapi/design-system';
 import { Drag, ArrowUp, ArrowDown, CaretUp, CaretDown, Loader } from '@strapi/icons';
@@ -17,6 +17,8 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
   const { model } = unstable_useContentManagerContext();
+
+  const handleItemSelect = useCallback((id: number) => setSelectedItemId(id), []);
 
   const handleMoveItem = (id: number, direction: MoveDirection) => {
     const currentIndex = data.findIndex((item) => item.id === id);
@@ -100,9 +102,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                 data={data}
                 onSortEnd={onSortEnd}
                 selectedItemId={selectedItemId}
-                onItemSelect={(id) => {
-                  setSelectedItemId(id);
-                }}
+                onItemSelect={handleItemSelect}
                 settings={settings}
               />
             )}

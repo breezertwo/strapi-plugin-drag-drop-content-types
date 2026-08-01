@@ -14,7 +14,9 @@ import {
   useFetchSettings,
   useIsSortable,
 } from '../../utils/api';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+
+const FALLBACK_SETTINGS = { rank: '', title: '', subtitle: null };
 
 export const SortModalLogicWrapper = () => {
   const { queryParams } = useQueryParams();
@@ -38,35 +40,38 @@ export const SortModalLogicWrapper = () => {
     isModalOpen
   );
 
-  const updateContentRanks = async (item: UpdateContentRanksParams) => {
-    const { oldIndex, newIndex } = item;
+  const updateContentRanks = useCallback(
+    (item: UpdateContentRanksParams) => {
+      const { oldIndex, newIndex } = item;
 
-    if (oldIndex === newIndex || !contentListData || !settingsData) return;
+      if (oldIndex === newIndex || !contentListData || !settingsData) return;
 
-    const movedItem = contentListData[oldIndex];
-    if (!movedItem) return;
+      const movedItem = contentListData[oldIndex];
+      if (!movedItem) return;
 
-    moveContentItem(
-      {
-        id: movedItem.id,
-        newIndex,
-        optimisticData: arrayMoveImmutable(contentListData, oldIndex, newIndex),
-      },
-      {
-        onError: (e) => {
-          console.error('[drag-drop-content-types]: Could not update content type');
-          console.error(e);
-
-          toggleNotification({
-            type: 'danger',
-            message: isFetchError(e)
-              ? formatAPIError(e)
-              : 'Failed to update order. Changes have been reverted.',
-          });
+      moveContentItem(
+        {
+          id: movedItem.id,
+          newIndex,
+          optimisticData: arrayMoveImmutable(contentListData, oldIndex, newIndex),
         },
-      }
-    );
-  };
+        {
+          onError: (e) => {
+            console.error('[drag-drop-content-types]: Could not update content type');
+            console.error(e);
+
+            toggleNotification({
+              type: 'danger',
+              message: isFetchError(e)
+                ? formatAPIError(e)
+                : 'Failed to update order. Changes have been reverted.',
+            });
+          },
+        }
+      );
+    },
+    [contentListData, settingsData, moveContentItem, toggleNotification, formatAPIError]
+  );
 
   const getStatus = (): SortModalStatus => {
     if (!isSortable) {
@@ -85,14 +90,8 @@ export const SortModalLogicWrapper = () => {
       data={contentListData ?? []}
       status={getStatus()}
       onSortEnd={updateContentRanks}
-      onOpenChange={(open: boolean) => setIsModalOpen(open)}
-      settings={
-        settingsData ?? {
-          rank: '',
-          title: '',
-          subtitle: null,
-        }
-      }
+      onOpenChange={setIsModalOpen}
+      settings={settingsData ?? FALLBACK_SETTINGS}
     />
   );
 };
