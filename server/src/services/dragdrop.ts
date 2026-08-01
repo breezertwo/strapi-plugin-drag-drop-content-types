@@ -220,13 +220,32 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(targetIndex, 0, moved);
 
+    // The listing only carries the row of the viewed locale, whose rank can differ
+    // from its siblings in other locales or from its published counterpart. Ranks
+    // of every row are collected so a document already sitting at its position is
+    // still repaired when a sibling disagrees.
+    const siblingRanks = new Map<string, Set<unknown>>();
+    const allRows = (await strapi.db.query(contentType).findMany({
+      select: ['documentId', rankFieldName],
+    })) as Record<string, any>[];
+
+    for (const row of allRows) {
+      if (!siblingRanks.has(row.documentId)) {
+        siblingRanks.set(row.documentId, new Set());
+      }
+      siblingRanks.get(row.documentId)!.add(row[rankFieldName] ?? null);
+    }
+
     // Ranks are rewritten to match list positions, which also normalises entries
     // that were never ranked or whose ranks left gaps.
     const ranksByDocumentId = new Map<string, number>();
     const changedIds: number[] = [];
 
     reordered.forEach((item, index) => {
-      if (item[rankFieldName] !== index) {
+      const ranks = siblingRanks.get(item.documentId);
+      const alreadyAligned = ranks?.size === 1 && ranks.has(index);
+
+      if (!alreadyAligned) {
         ranksByDocumentId.set(item.documentId, index);
         changedIds.push(item.id);
       }
