@@ -1,7 +1,8 @@
 import type { Core } from '@strapi/strapi';
+import type { Context } from 'koa';
 
 export default ({ strapi }: { strapi: Core.Strapi }) => ({
-  async getSettings(ctx) {
+  async getSettings(ctx: Context) {
     const settingService = strapi.plugin('drag-drop-content-types').service('settings');
 
     try {
@@ -11,7 +12,7 @@ export default ({ strapi }: { strapi: Core.Strapi }) => ({
     }
   },
 
-  async setSettings(ctx) {
+  async setSettings(ctx: Context) {
     const settingService = strapi.plugin('drag-drop-content-types').service('settings');
     const { body } = ctx.request;
 

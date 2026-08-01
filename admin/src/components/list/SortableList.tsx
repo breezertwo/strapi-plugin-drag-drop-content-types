@@ -12,8 +12,6 @@ const SortableList = ({
   selectedItemId,
   onItemSelect,
 }: SortableListProps) => {
-  // Entries are held by reference so reordering keeps their identity and the
-  // memoised items below can skip re-rendering. Titles are derived per item.
   const [items, setItems] = useState<TItem[]>(data);
 
   const previousItems = useRef<TItem[]>([]);

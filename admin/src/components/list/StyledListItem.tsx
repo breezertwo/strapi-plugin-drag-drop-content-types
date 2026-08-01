@@ -83,6 +83,4 @@ const StyledListItemBase = forwardRef<HTMLDivElement, StyledListItemProps>(
   }
 );
 
-// The index of every item between the drag source and its target changes on each
-// dragover, so this subtree is skipped unless something it actually renders moved.
 export const StyledListItem = memo(StyledListItemBase);

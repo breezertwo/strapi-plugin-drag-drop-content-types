@@ -22,7 +22,6 @@ export interface SortIndexItem {
 
 type ContentQueryResponse = { locale: string | null; id: number; documentId: string };
 
-// Keeps the bound parameter count of a single bulk statement below the SQLite ceiling.
 const RANK_UPDATE_CHUNK_SIZE = 200;
 
 const getColumnName = (meta: { attributes: Record<string, any> }, attributeName: string) => {
@@ -57,14 +56,10 @@ const applyRanks = async (
     for (let i = 0; i < entries.length; i += RANK_UPDATE_CHUNK_SIZE) {
       const chunk = entries.slice(i, i + RANK_UPDATE_CHUNK_SIZE);
 
-      // Ranks are inlined rather than bound: Postgres types a bound parameter in a
-      // THEN branch as text, which will not assign to a numeric rank column. They
-      // are list positions generated above and asserted to be integers.
       const cases = chunk.map(([, rank]) => `WHEN ? THEN ${rank}`).join(' ');
       const documentIds = chunk.map(([documentId]) => documentId);
 
-      // Matching on documentId rewrites every locale and both draft and published
-      // rows of a document in one statement.
+      // rewrites every locale and draft/published rows of a document in one statement
       await knex(meta.tableName)
         .transacting(trx)
         .whereIn(documentIdColumn, documentIds)
@@ -134,8 +129,8 @@ const getOrderedItems = async (
     select: [...new Set(select)],
   })) as ContentQueryResponse[];
 
-  // Unranked entries go last, and documentId breaks ties so equal or missing
-  // ranks still produce a stable order.
+  // Unranked entries last, documentId breaks ties so equal or missing
+  // ranks still produce a stable order
   const rankOf = (item: Record<string, any>) =>
     typeof item[rankFieldName] === 'number' ? item[rankFieldName] : Number.MAX_SAFE_INTEGER;
 
@@ -176,8 +171,8 @@ const getOrderedItems = async (
     allUniqueItems.set(item.documentId, item as SortIndexItem);
   });
 
-  // Entries that exist in other locales only are kept in the list as read-only
-  // placeholders so the ranks shared across locales stay consistent.
+  // Entries that exist in other locales only are kept as read-only
+  // placeholders so the ranks shared across locales stay consistent
   Object.entries(localeGroups).forEach(([localeKey, items]) => {
     items.forEach((item) => {
       if (!allUniqueItems.has(item.documentId)) {
@@ -220,10 +215,7 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(targetIndex, 0, moved);
 
-    // The listing only carries the row of the viewed locale, whose rank can differ
-    // from its siblings in other locales or from its published counterpart. Ranks
-    // of every row are collected so a document already sitting at its position is
-    // still repaired when a sibling disagrees.
+    // repair broken ranks by collecting sibling ranks and rewriting them to match list positions
     const siblingRanks = new Map<string, Set<unknown>>();
     const allRows = (await strapi.db.query(contentType).findMany({
       select: ['documentId', rankFieldName],
@@ -236,8 +228,6 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
       siblingRanks.get(row.documentId)!.add(row[rankFieldName] ?? null);
     }
 
-    // Ranks are rewritten to match list positions, which also normalises entries
-    // that were never ranked or whose ranks left gaps.
     const ranksByDocumentId = new Map<string, number>();
     const changedIds: number[] = [];
 

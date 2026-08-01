@@ -27,7 +27,6 @@ const SortableListItemBase = ({
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
-      // Only handle click if not dragging, onSelect is provided, and not a placeholder
       if (!isDragging && onSelectItem && !item.isPlaceholder) {
         e.stopPropagation();
         onSelectItem(isSelected ? -1 : item.id);

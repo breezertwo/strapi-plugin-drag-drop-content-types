@@ -30,8 +30,7 @@ const checkAccess = (
 ): AccessResult => {
   const schema = strapi.contentTypes[contentType as StrapiTypes.UID.ContentType];
 
-  // Restricted to what the content manager itself exposes, so internal models such
-  // as admin::user cannot be targeted even by a super admin.
+  // Restricted to what the content manager exposes, internal models (e.g. admin::user) cannot be targeted
   const isDisplayedCollectionType = strapi
     .plugin('content-manager')
     .service('content-types')
@@ -42,8 +41,6 @@ const checkAccess = (
     return 'unknown-content-type';
   }
 
-  // The route policy only gates access to the plugin as a whole, so the caller's
-  // rights on the targeted content type have to be checked per request.
   const permissionChecker = strapi
     .plugin('content-manager')
     .service('permission-checker')
