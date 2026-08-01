@@ -30,7 +30,15 @@ const checkAccess = (
 ): AccessResult => {
   const schema = strapi.contentTypes[contentType as StrapiTypes.UID.ContentType];
 
-  if (!schema || schema.kind !== 'collectionType') {
+  // Restricted to what the content manager itself exposes, so internal models such
+  // as admin::user cannot be targeted even by a super admin.
+  const isDisplayedCollectionType = strapi
+    .plugin('content-manager')
+    .service('content-types')
+    .findDisplayedContentTypes()
+    .some((model: { uid: string; kind: string }) => model.uid === contentType);
+
+  if (!schema || schema.kind !== 'collectionType' || !isDisplayedCollectionType) {
     return 'unknown-content-type';
   }
 
