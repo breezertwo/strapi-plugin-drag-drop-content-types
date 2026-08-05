@@ -200,7 +200,7 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async move(
     config: PluginSettingsResponse,
-    { contentType, rankFieldName, locale, id, newIndex }: MoveParams
+    { contentType, rankFieldName, locale, id, newIndex, position }: MoveParams
   ) {
     const items = await getOrderedItems(strapi, { contentType, rankFieldName, locale });
 
@@ -209,7 +209,16 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
       return [];
     }
 
-    const targetIndex = Math.min(Math.max(newIndex, 0), items.length - 1);
+    const dropIndex =
+      position === 'top'
+        ? 0
+        : position === 'bottom'
+          ? items.filter(
+              (item, index) => index !== oldIndex && typeof item[rankFieldName] === 'number'
+            ).length
+          : (newIndex ?? oldIndex);
+
+    const targetIndex = Math.min(Math.max(dropIndex, 0), items.length - 1);
 
     const reordered = [...items];
     const [moved] = reordered.splice(oldIndex, 1);

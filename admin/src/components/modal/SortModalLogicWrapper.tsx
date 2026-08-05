@@ -42,7 +42,7 @@ export const SortModalLogicWrapper = () => {
 
   const updateContentRanks = useCallback(
     (item: UpdateContentRanksParams) => {
-      const { oldIndex, newIndex } = item;
+      const { oldIndex, newIndex, position } = item;
 
       if (oldIndex === newIndex || !contentListData || !settingsData) return;
 
@@ -53,6 +53,7 @@ export const SortModalLogicWrapper = () => {
         {
           id: movedItem.id,
           newIndex,
+          position,
           optimisticData: arrayMoveImmutable(contentListData, oldIndex, newIndex),
         },
         {

@@ -13,12 +13,18 @@ export const SortableRequestSchema = z.object({
   contentType: z.string(),
 });
 
-export const MoveRequestSchema = z.object({
-  contentType: z.string(),
-  id: z.number().int(),
-  newIndex: z.number().int().min(0),
-  locale: z.string().optional(),
-});
+export const MoveRequestSchema = z
+  .object({
+    contentType: z.string(),
+    id: z.number().int(),
+    newIndex: z.number().int().min(0).optional(),
+    position: z.enum(['top', 'bottom']).optional(),
+    locale: z.string().optional(),
+  })
+  .refine((body) => body.newIndex !== undefined || body.position !== undefined, {
+    message: "Either 'newIndex' or 'position' is required",
+    path: ['newIndex'],
+  });
 
 type AccessResult = 'ok' | 'unknown-content-type' | 'forbidden';
 

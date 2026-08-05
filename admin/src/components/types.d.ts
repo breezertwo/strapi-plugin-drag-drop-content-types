@@ -60,4 +60,5 @@ export interface FetchedSettings {
 export interface UpdateContentRanksParams {
   oldIndex: number;
   newIndex: number;
+  position?: 'top' | 'bottom';
 }

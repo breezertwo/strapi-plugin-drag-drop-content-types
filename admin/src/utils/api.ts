@@ -117,12 +117,14 @@ export const useMoveContentItem = (contentType: string, locale?: string) => {
   const moveContentItem = async (params: {
     id: number;
     newIndex: number;
+    position?: 'top' | 'bottom';
     optimisticData: GetPageEntriesResponse[];
   }) => {
     await put('/drag-drop-content-types/move', {
       contentType,
       id: params.id,
       newIndex: params.newIndex,
+      position: params.position,
       locale,
     });
   };
