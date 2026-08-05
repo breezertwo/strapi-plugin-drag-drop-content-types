@@ -33,7 +33,7 @@ const applyRanks = async (
   strapi: Core.Strapi,
   contentType: StrapiTypes.UID.CollectionType,
   rankFieldName: string,
-  ranksByDocumentId: Map<string, number>
+  ranksByDocumentId: Map<string, number | null>
 ) => {
   const meta = strapi.db.metadata.get(contentType);
   const rankColumn = getColumnName(meta, rankFieldName);
@@ -48,7 +48,7 @@ const applyRanks = async (
   const knex = strapi.db.connection;
   const entries = [...ranksByDocumentId.entries()];
 
-  if (entries.some(([, rank]) => !Number.isInteger(rank))) {
+  if (entries.some(([, rank]) => rank !== null && !Number.isInteger(rank))) {
     throw new Error(`Refusing to write non-integer ranks to '${contentType}'`);
   }
 
@@ -56,7 +56,7 @@ const applyRanks = async (
     for (let i = 0; i < entries.length; i += RANK_UPDATE_CHUNK_SIZE) {
       const chunk = entries.slice(i, i + RANK_UPDATE_CHUNK_SIZE);
 
-      const cases = chunk.map(([, rank]) => `WHEN ? THEN ${rank}`).join(' ');
+      const cases = chunk.map(([, rank]) => `WHEN ? THEN ${rank ?? 'NULL'}`).join(' ');
       const documentIds = chunk.map(([documentId]) => documentId);
 
       // rewrites every locale and draft/published rows of a document in one statement
@@ -215,6 +215,12 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(targetIndex, 0, moved);
 
+    const lastRankedIndex = reordered.reduce(
+      (last, item, index) => (typeof item[rankFieldName] === 'number' ? index : last),
+      -1
+    );
+    const rankedUntil = Math.max(targetIndex, lastRankedIndex);
+
     // repair broken ranks by collecting sibling ranks and rewriting them to match list positions
     const siblingRanks = new Map<string, Set<unknown>>();
     const allRows = (await strapi.db.query(contentType).findMany({
@@ -228,15 +234,16 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
       siblingRanks.get(row.documentId)!.add(row[rankFieldName] ?? null);
     }
 
-    const ranksByDocumentId = new Map<string, number>();
+    const ranksByDocumentId = new Map<string, number | null>();
     const changedIds: number[] = [];
 
     reordered.forEach((item, index) => {
+      const nextRank = index <= rankedUntil ? index : null;
       const ranks = siblingRanks.get(item.documentId);
-      const alreadyAligned = ranks?.size === 1 && ranks.has(index);
+      const alreadyAligned = ranks?.size === 1 && ranks.has(nextRank);
 
       if (!alreadyAligned) {
-        ranksByDocumentId.set(item.documentId, index);
+        ranksByDocumentId.set(item.documentId, nextRank);
         changedIds.push(item.id);
       }
     });
