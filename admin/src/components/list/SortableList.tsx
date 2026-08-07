@@ -47,11 +47,11 @@ const SortableList = ({
         const oldIndex = dragStartItems.current.findIndex((item) => item.id === source.id);
         const newIndex = currentItems.findIndex((item) => item.id === source.id);
 
-        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-          onSortEnd({ oldIndex, newIndex });
+        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+          return currentItems;
         }
 
-        return currentItems;
+        return onSortEnd({ oldIndex, newIndex }) ? currentItems : dragStartItems.current;
       });
     },
     [onSortEnd]

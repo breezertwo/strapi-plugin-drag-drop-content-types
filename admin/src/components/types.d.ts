@@ -5,14 +5,14 @@ export type SortModalStatus = 'unavailable' | 'loading' | 'empty' | 'success';
 export interface SortMenuProps {
   status: SortModalStatus;
   data: GetPageEntriesResponse[];
-  onSortEnd: (item: UpdateContentTypeParams) => void;
+  onSortEnd: (item: UpdateContentRanksParams) => boolean;
   onOpenChange?: (open: boolean) => void;
   settings: FetchedSettings;
 }
 
 export interface SortableListProps {
   data: GetPageEntriesResponse[];
-  onSortEnd: (item: UpdateContentTypeParams) => void;
+  onSortEnd: (item: UpdateContentRanksParams) => boolean;
   selectedItemId?: number;
   onItemSelect: (id: number) => void;
   settings: FetchedSettings;

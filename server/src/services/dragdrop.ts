@@ -209,26 +209,24 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
       return [];
     }
 
-    const dropIndex =
-      position === 'top'
-        ? 0
-        : position === 'bottom'
-          ? items.filter(
-              (item, index) => index !== oldIndex && typeof item[rankFieldName] === 'number'
-            ).length
-          : (newIndex ?? oldIndex);
+    const rankedBlockSize = items.filter(
+      (item, index) => index !== oldIndex && typeof item[rankFieldName] === 'number'
+    ).length;
 
-    const targetIndex = Math.min(Math.max(dropIndex, 0), items.length - 1);
+    const dropIndex =
+      position === 'top' ? 0 : position === 'bottom' ? rankedBlockSize : (newIndex ?? oldIndex);
+
+    if (dropIndex > rankedBlockSize && typeof items[oldIndex][rankFieldName] !== 'number') {
+      return [];
+    }
+
+    const targetIndex = Math.min(Math.max(dropIndex, 0), rankedBlockSize);
 
     const reordered = [...items];
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(targetIndex, 0, moved);
 
-    const lastRankedIndex = reordered.reduce(
-      (last, item, index) => (typeof item[rankFieldName] === 'number' ? index : last),
-      -1
-    );
-    const rankedUntil = Math.max(targetIndex, lastRankedIndex);
+    const rankedUntil = rankedBlockSize;
 
     // repair broken ranks by collecting sibling ranks and rewriting them to match list positions
     const siblingRanks = new Map<string, Set<unknown>>();

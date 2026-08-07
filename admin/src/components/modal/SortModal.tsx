@@ -7,6 +7,7 @@ import { Modal } from '@strapi/design-system';
 import { Button } from '@strapi/design-system';
 import { useIntl } from 'react-intl';
 import { getTranslation } from '../../utils/getTranslation';
+import { rankedBlockSize, resolveDropIndex } from '../../utils/ranking';
 import { Box, Flex, Typography } from '@strapi/design-system';
 import { useDispatch } from 'react-redux';
 import { adminApi, unstable_useContentManagerContext } from '@strapi/strapi/admin';
@@ -21,8 +22,13 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
   const handleItemSelect = useCallback((id: number) => setSelectedItemId(id), []);
 
   const bottomIndexFor = (currentIndex: number) =>
-    data.filter((item, index) => index !== currentIndex && typeof item[settings.rank] === 'number')
-      .length;
+    rankedBlockSize(data, settings.rank, currentIndex);
+
+  const canMoveTo = (currentIndex: number, targetIndex: number) =>
+    resolveDropIndex(data, settings.rank, currentIndex, targetIndex) !== null;
+
+  const canMoveUp = (currentIndex: number) =>
+    currentIndex > 0 && typeof data[currentIndex - 1]?.[settings.rank] === 'number';
 
   const handleMoveItem = (id: number, direction: MoveDirection) => {
     const currentIndex = data.findIndex((item) => item.id === id);
@@ -40,7 +46,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
         newIndex = 0;
         break;
       case 'bottom':
-        newIndex = Math.min(data.length - 1, bottomIndexFor(currentIndex));
+        newIndex = bottomIndexFor(currentIndex);
         break;
       default:
         return;
@@ -135,7 +141,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                     size="S"
                     startIcon={<ArrowUp />}
                     onClick={() => handleMoveItem(selectedItemId, 'up')}
-                    disabled={selectedIndex === 0}
+                    disabled={!canMoveUp(selectedIndex)}
                   >
                     Up
                   </Button>
@@ -144,7 +150,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                     size="S"
                     startIcon={<ArrowDown />}
                     onClick={() => handleMoveItem(selectedItemId, 'down')}
-                    disabled={selectedIndex === data.length - 1}
+                    disabled={!canMoveTo(selectedIndex, selectedIndex + 1)}
                   >
                     Down
                   </Button>
@@ -153,7 +159,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                     size="S"
                     startIcon={<CaretDown />}
                     onClick={() => handleMoveItem(selectedItemId, 'bottom')}
-                    disabled={selectedIndex === bottomIndexFor(selectedIndex)}
+                    disabled={!canMoveTo(selectedIndex, bottomIndexFor(selectedIndex))}
                   >
                     To Bottom
                   </Button>

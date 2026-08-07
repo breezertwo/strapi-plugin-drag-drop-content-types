@@ -15,6 +15,7 @@ import {
   useIsSortable,
 } from '../../utils/api';
 import { useCallback, useState } from 'react';
+import { resolveDropIndex } from '../../utils/ranking';
 
 const FALLBACK_SETTINGS = { rank: '', title: '', subtitle: null };
 
@@ -44,17 +45,20 @@ export const SortModalLogicWrapper = () => {
     (item: UpdateContentRanksParams) => {
       const { oldIndex, newIndex, position } = item;
 
-      if (oldIndex === newIndex || !contentListData || !settingsData) return;
+      if (oldIndex === newIndex || !contentListData || !settingsData) return false;
 
       const movedItem = contentListData[oldIndex];
-      if (!movedItem) return;
+      if (!movedItem) return false;
+
+      const dropIndex = resolveDropIndex(contentListData, settingsData.rank, oldIndex, newIndex);
+      if (dropIndex === null) return false;
 
       moveContentItem(
         {
           id: movedItem.id,
-          newIndex,
+          newIndex: dropIndex,
           position,
-          optimisticData: arrayMoveImmutable(contentListData, oldIndex, newIndex),
+          optimisticData: arrayMoveImmutable(contentListData, oldIndex, dropIndex),
         },
         {
           onError: (e) => {
@@ -70,6 +74,8 @@ export const SortModalLogicWrapper = () => {
           },
         }
       );
+
+      return true;
     },
     [contentListData, settingsData, moveContentItem, toggleNotification, formatAPIError]
   );
