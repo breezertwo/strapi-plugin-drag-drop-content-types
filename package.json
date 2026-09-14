@@ -54,20 +54,20 @@
   "dependencies": {
     "@dnd-kit/helpers": "0.5.0",
     "@dnd-kit/react": "0.5.0",
-    "@tanstack/react-query": "5.101.4",
+    "@tanstack/react-query": "5.102.8",
     "array-move": "4.0.0"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "12.0.0",
-    "@strapi/design-system": "2.2.3",
-    "@strapi/icons": "2.2.3",
+    "@strapi/design-system": "2.2.4",
+    "@strapi/icons": "2.2.4",
     "@strapi/sdk-plugin": "6.1.1",
-    "@strapi/strapi": "^5.51.1",
-    "@strapi/typescript-utils": "^5.51.0",
-    "@strapi/utils": "^5.51.0",
+    "@strapi/strapi": "^5.53.0",
+    "@strapi/typescript-utils": "^5.53.0",
+    "@strapi/utils": "^5.53.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "oxfmt": "^0.61.0",
+    "oxfmt": "^0.67.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-intl": "6.6.2",
@@ -77,8 +77,8 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "@strapi/design-system": "^2.2.3",
-    "@strapi/icons": "^2.2.3",
+    "@strapi/design-system": "^2",
+    "@strapi/icons": "^2",
     "@strapi/strapi": "^5",
     "@strapi/utils": "^5",
     "react": "^18",
