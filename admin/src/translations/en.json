@@ -29,7 +29,7 @@
   "plugin.settings.sortableList.menuIcon.off": "Sort menu is not available for this content-type. No rank field present.",
   "plugin.modal.header.title": "Sort content with drag & drop",
   "plugin.modal.body.empty": "There is no content to sort yet.",
-  "plugin.modal.body.filtered": "Showing matching entries in rank order. To Top and To Bottom move across the entire content type, including hidden entries.",
+  "plugin.modal.body.filtered": "Showing entries with filters applied.",
   "plugin.modal.body.error": "Could not load entries to sort.",
   "plugin.modal.body.retry": "Retry"
 }

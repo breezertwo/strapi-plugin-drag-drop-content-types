@@ -29,15 +29,20 @@ export const SortModalLogicWrapper = () => {
   const params = useMemo(() => getMatchingParams(query), [query]);
   const isFiltered = hasMatchingRestrictions(params);
   const locale = typeof params.locale === 'string' ? params.locale : undefined;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const { toggleNotification } = useNotification();
   const { formatAPIError } = useAPIErrorHandler();
   const { model: contentType } = unstable_useContentManagerContext();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const { mutateAsync: moveContentItem } = useMoveContentItem(contentType, locale);
+
   const sortable = useIsSortable(contentType);
   const settings = useFetchSettings(contentType, isModalOpen);
   const fullList = useFetchContentList(contentType, locale, isModalOpen);
   const matches = useMatchingDocuments(contentType, params, isModalOpen && isFiltered);
+
   const data = useMemo(
     () => visibleDocuments(fullList.data ?? [], isFiltered ? (matches.data ?? []) : undefined),
     [fullList.data, isFiltered, matches.data]
@@ -47,24 +52,29 @@ export const SortModalLogicWrapper = () => {
   const updateContentRanks = useCallback(
     (item: UpdateContentRanksParams) => {
       if (busy || !fullList.data || !settings.data) return false;
+
       const movedItem = data[item.oldIndex];
       if (!movedItem || movedItem.isPlaceholder) return false;
+
       let destination: MoveDestination;
       if (item.position) {
         destination = { position: item.position };
       } else {
         const crossedItem = data[item.newIndex];
         if (item.oldIndex === item.newIndex || !crossedItem) return false;
+
         // Preserve the existing clamp to the ranked block for unrestricted drag operations.
         if (!isFiltered) destination = { newIndex: item.newIndex };
-        else
+        else {
           destination = {
             target: {
               documentId: crossedItem.documentId,
               placement: item.newIndex < item.oldIndex ? 'before' : 'after',
             },
           };
+        }
       }
+
       let optimisticData;
       try {
         optimisticData = reorderDocuments(
@@ -76,6 +86,7 @@ export const SortModalLogicWrapper = () => {
       } catch {
         return false;
       }
+
       void moveContentItem({
         id: movedItem.id,
         rankField: settings.data.rank,
@@ -89,6 +100,7 @@ export const SortModalLogicWrapper = () => {
             : 'Failed to update order. Changes have been reverted.',
         });
       });
+
       return true;
     },
     [
@@ -105,6 +117,7 @@ export const SortModalLogicWrapper = () => {
 
   const hasError =
     sortable.isError || settings.isError || fullList.isError || (isFiltered && matches.isError);
+
   const getStatus = (): SortModalStatus => {
     if (hasError) return 'error';
     if (sortable.data === false) return 'unavailable';

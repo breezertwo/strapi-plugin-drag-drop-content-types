@@ -128,7 +128,9 @@ export const useMatchingDocuments = (
   enabled: boolean
 ) => {
   const { get } = useFetchClient();
+
   const isMoving = useIsMutating({ mutationKey: ['move_content_item', contentType] }) > 0;
+
   return useQuery({
     queryKey: ['matching_documents', contentType, params],
     enabled: enabled && !isMoving,
@@ -156,9 +158,12 @@ export const useMatchingDocuments = (
 
 export const useMoveContentItem = (contentType: string, locale?: string) => {
   const { put } = useFetchClient();
+
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
+
   const moves = useMemo(() => new OptimisticMoves(), [queryClient, contentType, locale]);
+
   const queryKey = ['fetch_content_list', contentType, locale];
   const mutationKey = ['move_content_item', contentType];
 
@@ -175,7 +180,6 @@ export const useMoveContentItem = (contentType: string, locale?: string) => {
 
   return useMutation({
     mutationKey,
-    // onMutate still runs immediately for queued mutations; only the requests are serialized.
     scope: { id: `move_content_item:${contentType}` },
     mutationFn: moveContentItem,
     onMutate: async (params) => {
@@ -183,8 +187,11 @@ export const useMoveContentItem = (contentType: string, locale?: string) => {
         queryClient.cancelQueries({ queryKey: ['fetch_content_list', contentType] }),
         queryClient.cancelQueries({ queryKey: ['matching_documents', contentType] }),
       ]);
+
       const current = queryClient.getQueryData<GetPageEntriesResponse[]>(queryKey) ?? [];
+
       queryClient.setQueryData(queryKey, moves.add(params, current));
+
       await canceled;
     },
     onSuccess: (_data, params) => {
@@ -194,11 +201,12 @@ export const useMoveContentItem = (contentType: string, locale?: string) => {
       queryClient.setQueryData(queryKey, moves.settle(params, false));
     },
     onSettled: async () => {
-      // Intermediate responses must not refetch over newer optimistic moves.
       if (queryClient.isMutating({ mutationKey }) > 1) return;
+
       dispatch(
         adminApi.util.invalidateTags([{ type: 'Document' as any, id: `${contentType}_LIST` }])
       );
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['fetch_content_list', contentType] }),
         queryClient.invalidateQueries({ queryKey: ['matching_documents', contentType] }),

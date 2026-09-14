@@ -36,6 +36,7 @@ export function getMatchingParams(query: Record<string, any>): Record<string, un
 const hasFilterRules = (value: unknown): boolean => {
   if (Array.isArray(value)) return value.some(hasFilterRules);
   if (value === null || typeof value !== 'object') return false;
+
   return Object.entries(value).some(([key, child]) =>
     ['$and', '$or', '$not'].includes(key) ? hasFilterRules(child) : true
   );

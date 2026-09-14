@@ -13,7 +13,6 @@ export interface MoveDestination {
 
 export class InvalidMoveError extends Error {}
 
-// Resolve against the complete list, never against filtered row indexes.
 export function reorderDocuments<T extends OrderedDocument>(
   items: T[],
   rankField: string,
