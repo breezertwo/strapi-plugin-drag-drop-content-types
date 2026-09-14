@@ -1,5 +1,15 @@
-import { useFetchClient, useNotification } from '@strapi/strapi/admin';
-import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { OptimisticMoves, type OptimisticMove } from './optimisticMoves';
+import { fetchMatchingDocumentIds, serializeMatchingParams } from './filtering';
+import { adminApi, useFetchClient, useNotification } from '@strapi/strapi/admin';
+import { useDispatch } from 'react-redux';
+import {
+  QueryClient,
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import type { ContentTypeConfigResponse, GetPageEntriesResponse } from '../components/types';
 import type { PluginSettingsResponse } from '../../../server/src/services/settings';
 import { useIntl } from 'react-intl';
@@ -89,15 +99,17 @@ export const useIsSortable = (contentType: string) => {
 
 export const useFetchContentList = (contentType: string, locale?: string, enabled = true) => {
   const { get } = useFetchClient();
+  const isMoving = useIsMutating({ mutationKey: ['move_content_item', contentType] }) > 0;
 
-  const fetchContentList = async () => {
+  const fetchContentList = async ({ signal }: { signal: AbortSignal }) => {
     const sortIndexParam = new URLSearchParams({ contentType });
     if (locale) {
       sortIndexParam.set('locale', locale);
     }
 
     const result = await get<GetPageEntriesResponse[]>(
-      `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`
+      `/drag-drop-content-types/sort-index?${sortIndexParam.toString()}`,
+      { signal }
     );
 
     return result.data || [];
@@ -106,49 +118,91 @@ export const useFetchContentList = (contentType: string, locale?: string, enable
   return useQuery({
     queryKey: ['fetch_content_list', contentType, locale],
     queryFn: fetchContentList,
-    enabled,
+    enabled: enabled && !isMoving,
+  });
+};
+
+export const useMatchingDocuments = (
+  contentType: string,
+  params: Record<string, unknown>,
+  enabled: boolean
+) => {
+  const { get } = useFetchClient();
+  const isMoving = useIsMutating({ mutationKey: ['move_content_item', contentType] }) > 0;
+  return useQuery({
+    queryKey: ['matching_documents', contentType, params],
+    enabled: enabled && !isMoving,
+    queryFn: ({ signal }) =>
+      fetchMatchingDocumentIds(async (page) => {
+        const { data } = await get<{
+          results: { documentId: string }[];
+          pagination: { pageCount: number };
+        }>(
+          `/content-manager/collection-types/${encodeURIComponent(contentType)}?${serializeMatchingParams(
+            {
+              ...params,
+              page,
+              sort: 'documentId:asc',
+            }
+          )}`,
+          {
+            signal,
+          }
+        );
+        return data;
+      }),
   });
 };
 
 export const useMoveContentItem = (contentType: string, locale?: string) => {
   const { put } = useFetchClient();
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
+  const moves = useMemo(() => new OptimisticMoves(), [queryClient, contentType, locale]);
+  const queryKey = ['fetch_content_list', contentType, locale];
+  const mutationKey = ['move_content_item', contentType];
 
-  const moveContentItem = async (params: {
-    id: number;
-    newIndex: number;
-    position?: 'top' | 'bottom';
-    optimisticData: GetPageEntriesResponse[];
-  }) => {
+  const moveContentItem = async (params: OptimisticMove) => {
     await put('/drag-drop-content-types/move', {
       contentType,
       id: params.id,
       newIndex: params.newIndex,
       position: params.position,
+      target: params.target,
       locale,
     });
   };
 
   return useMutation({
+    mutationKey,
+    // onMutate still runs immediately for queued mutations; only the requests are serialized.
+    scope: { id: `move_content_item:${contentType}` },
     mutationFn: moveContentItem,
     onMutate: async (params) => {
-      await queryClient.cancelQueries({ queryKey: ['fetch_content_list', contentType, locale] });
-      const previousData = queryClient.getQueryData<GetPageEntriesResponse[]>([
-        'fetch_content_list',
-        contentType,
-        locale,
+      const canceled = Promise.all([
+        queryClient.cancelQueries({ queryKey: ['fetch_content_list', contentType] }),
+        queryClient.cancelQueries({ queryKey: ['matching_documents', contentType] }),
       ]);
-
-      queryClient.setQueryData(['fetch_content_list', contentType, locale], params.optimisticData);
-      return { previousData };
+      const current = queryClient.getQueryData<GetPageEntriesResponse[]>(queryKey) ?? [];
+      queryClient.setQueryData(queryKey, moves.add(params, current));
+      await canceled;
     },
-    onError: (_err, _params, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(['fetch_content_list', contentType, locale], context.previousData);
-      }
+    onSuccess: (_data, params) => {
+      moves.settle(params, true);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['fetch_content_list', contentType, locale] });
+    onError: (_err, params) => {
+      queryClient.setQueryData(queryKey, moves.settle(params, false));
+    },
+    onSettled: async () => {
+      // Intermediate responses must not refetch over newer optimistic moves.
+      if (queryClient.isMutating({ mutationKey }) > 1) return;
+      dispatch(
+        adminApi.util.invalidateTags([{ type: 'Document' as any, id: `${contentType}_LIST` }])
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['fetch_content_list', contentType] }),
+        queryClient.invalidateQueries({ queryKey: ['matching_documents', contentType] }),
+      ]);
     },
   });
 };

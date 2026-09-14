@@ -2,6 +2,7 @@ import type { Core } from '@strapi/strapi';
 import type * as StrapiTypes from '@strapi/types/dist';
 import { z } from 'zod';
 import { Context } from 'koa';
+import { InvalidMoveError } from '../../../shared/ordering';
 import { PluginSettingsResponse } from 'src/services/settings';
 
 export const SortIndexRequestSchema = z.object({
@@ -17,14 +18,28 @@ export const MoveRequestSchema = z
   .object({
     contentType: z.string(),
     id: z.number().int(),
+    target: z
+      .object({
+        documentId: z.string().min(1),
+        placement: z.enum(['before', 'after']),
+      })
+      .optional(),
     newIndex: z.number().int().min(0).optional(),
     position: z.enum(['top', 'bottom']).optional(),
     locale: z.string().optional(),
   })
-  .refine((body) => body.newIndex !== undefined || body.position !== undefined, {
-    message: "Either 'newIndex' or 'position' is required",
-    path: ['newIndex'],
-  });
+  .refine((body) => !body.target || (body.newIndex === undefined && body.position === undefined), {
+    message: 'A target cannot be combined with an index or position',
+    path: ['target'],
+  })
+  .refine(
+    (body) =>
+      body.target !== undefined || body.newIndex !== undefined || body.position !== undefined,
+    {
+      message: 'A target, newIndex or position is required',
+      path: ['newIndex'],
+    }
+  );
 
 type AccessResult = 'ok' | 'unknown-content-type' | 'forbidden';
 
@@ -64,6 +79,8 @@ const rejectAccess = (ctx: Context, access: AccessResult, contentType: string) =
 };
 
 const fail = (ctx: Context, strapi: Core.Strapi, err: unknown, message: string) => {
+  if (err instanceof InvalidMoveError) return ctx.badRequest(err.message);
+
   if (err instanceof z.ZodError) {
     return ctx.badRequest('Invalid request', { errors: err.issues });
   }

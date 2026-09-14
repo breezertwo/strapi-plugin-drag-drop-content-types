@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { MoveDirection, SortMenuProps } from '../types';
 import { IconButton } from '@strapi/design-system';
 import { Drag, ArrowUp, ArrowDown, CaretUp, CaretDown, Loader } from '@strapi/icons';
@@ -12,8 +12,23 @@ import { Box, Flex, Typography } from '@strapi/design-system';
 import { useDispatch } from 'react-redux';
 import { adminApi, unstable_useContentManagerContext } from '@strapi/strapi/admin';
 
-export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: SortMenuProps) => {
+export const SortModal = ({
+  status,
+  data,
+  onSortEnd,
+  onOpenChange,
+  settings,
+  fullData,
+  isFiltered,
+  isLoadingEntries,
+  onRetry,
+}: SortMenuProps) => {
   const [selectedItemId, setSelectedItemId] = useState<number>();
+
+  useEffect(() => {
+    if (!data.some((item) => item.id === selectedItemId && !item.isPlaceholder))
+      setSelectedItemId(undefined);
+  }, [data, selectedItemId]);
 
   const { formatMessage } = useIntl();
   const dispatch = useDispatch();
@@ -32,7 +47,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
 
   const handleMoveItem = (id: number, direction: MoveDirection) => {
     const currentIndex = data.findIndex((item) => item.id === id);
-    if (currentIndex === -1) return;
+    if (currentIndex === -1 || isLoadingEntries) return;
 
     let newIndex: number;
     switch (direction) {
@@ -52,7 +67,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
         return;
     }
 
-    if (newIndex !== currentIndex) {
+    if (newIndex !== currentIndex || direction === 'top' || direction === 'bottom') {
       onSortEnd({
         oldIndex: currentIndex,
         newIndex,
@@ -62,6 +77,12 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
   };
 
   const selectedIndex = data.findIndex((item) => item.id === selectedItemId);
+
+  const globalSelectedIndex = fullData.findIndex((item) => item.id === selectedItemId);
+  const atGlobalBottom =
+    globalSelectedIndex >= 0 &&
+    typeof fullData[globalSelectedIndex]?.[settings.rank] === 'number' &&
+    globalSelectedIndex === rankedBlockSize(fullData, settings.rank, globalSelectedIndex);
 
   return (
     <Modal.Root
@@ -100,7 +121,24 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
               })}
             </Modal.Title>
           </Modal.Header>
+          {isFiltered && (
+            <Box padding={4}>
+              <Typography variant="pi">
+                {formatMessage({ id: getTranslation('plugin.modal.body.filtered') })}
+              </Typography>
+            </Box>
+          )}
           <Box maxHeight="calc(100vh - 200px)" overflow="auto" padding={4}>
+            {status === 'error' && (
+              <Flex direction="column" gap={3} padding={6}>
+                <Typography>
+                  {formatMessage({ id: getTranslation('plugin.modal.body.error') })}
+                </Typography>
+                <Button onClick={onRetry}>
+                  {formatMessage({ id: getTranslation('plugin.modal.body.retry') })}
+                </Button>
+              </Flex>
+            )}
             {status === 'loading' && (
               <Flex justifyContent="center" padding={6}>
                 <Loader />
@@ -116,6 +154,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
             {status === 'success' && (
               <SortableList
                 data={data}
+                disabled={isLoadingEntries}
                 onSortEnd={onSortEnd}
                 selectedItemId={selectedItemId}
                 onItemSelect={handleItemSelect}
@@ -132,7 +171,12 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                     size="S"
                     startIcon={<CaretUp />}
                     onClick={() => handleMoveItem(selectedItemId, 'top')}
-                    disabled={selectedIndex === 0}
+                    disabled={
+                      isLoadingEntries ||
+                      globalSelectedIndex < 0 ||
+                      (globalSelectedIndex === 0 &&
+                        typeof fullData[globalSelectedIndex]?.[settings.rank] === 'number')
+                    }
                   >
                     To Top
                   </Button>
@@ -141,7 +185,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                     size="S"
                     startIcon={<ArrowUp />}
                     onClick={() => handleMoveItem(selectedItemId, 'up')}
-                    disabled={!canMoveUp(selectedIndex)}
+                    disabled={isLoadingEntries || !canMoveUp(selectedIndex)}
                   >
                     Up
                   </Button>
@@ -150,7 +194,12 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                     size="S"
                     startIcon={<ArrowDown />}
                     onClick={() => handleMoveItem(selectedItemId, 'down')}
-                    disabled={!canMoveTo(selectedIndex, selectedIndex + 1)}
+                    disabled={
+                      isLoadingEntries ||
+                      (isFiltered
+                        ? typeof data[selectedIndex + 1]?.[settings.rank] !== 'number'
+                        : !canMoveTo(selectedIndex, selectedIndex + 1))
+                    }
                   >
                     Down
                   </Button>
@@ -159,7 +208,7 @@ export const SortModal = ({ status, data, onSortEnd, onOpenChange, settings }: S
                     size="S"
                     startIcon={<CaretDown />}
                     onClick={() => handleMoveItem(selectedItemId, 'bottom')}
-                    disabled={!canMoveTo(selectedIndex, bottomIndexFor(selectedIndex))}
+                    disabled={isLoadingEntries || globalSelectedIndex < 0 || atGlobalBottom}
                   >
                     To Bottom
                   </Button>
