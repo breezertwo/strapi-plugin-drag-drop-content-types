@@ -7,6 +7,7 @@ import { SortableListProps } from '../types';
 
 const SortableList = ({
   data,
+  disabled,
   settings,
   onSortEnd,
   selectedItemId,
@@ -14,20 +15,17 @@ const SortableList = ({
 }: SortableListProps) => {
   const [items, setItems] = useState<TItem[]>(data);
 
-  const previousItems = useRef<TItem[]>([]);
   const dragStartItems = useRef<TItem[]>([]);
+  const dragStartData = useRef(data);
 
   useEffect(() => {
     setItems(data);
   }, [data]);
 
   const handleDragStart = useCallback(() => {
-    setItems((currentItems) => {
-      previousItems.current = currentItems;
-      dragStartItems.current = currentItems;
-      return currentItems;
-    });
-  }, []);
+    dragStartItems.current = items;
+    dragStartData.current = data;
+  }, [items, data]);
 
   const handleDragOver = useCallback((event: any) => {
     setItems((currentItems) => move(currentItems, event));
@@ -35,26 +33,23 @@ const SortableList = ({
 
   const handleDragEnd = useCallback(
     (event: any) => {
-      if (event.canceled) {
-        setItems(previousItems.current);
+      if (event.canceled || disabled || dragStartData.current !== data) {
+        setItems(data);
         return;
       }
 
       const { source } = event.operation;
       if (!source) return;
 
-      setItems((currentItems) => {
-        const oldIndex = dragStartItems.current.findIndex((item) => item.id === source.id);
-        const newIndex = currentItems.findIndex((item) => item.id === source.id);
+      const oldIndex = dragStartItems.current.findIndex((item) => item.id === source.id);
+      const newIndex = items.findIndex((item) => item.id === source.id);
 
-        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-          return currentItems;
-        }
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
 
-        return onSortEnd({ oldIndex, newIndex }) ? currentItems : dragStartItems.current;
-      });
+      // Keep the mutation outside a state updater, which React may replay.
+      if (!onSortEnd({ oldIndex, newIndex })) setItems(data);
     },
-    [onSortEnd]
+    [onSortEnd, disabled, data, items]
   );
 
   return (
@@ -65,6 +60,7 @@ const SortableList = ({
     >
       {items.map((item, index) => (
         <SortableListItem
+          disabled={disabled}
           key={item.id}
           item={item}
           index={index}

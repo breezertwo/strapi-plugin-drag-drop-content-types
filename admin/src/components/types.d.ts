@@ -1,8 +1,12 @@
 export type MoveDirection = 'up' | 'down' | 'top' | 'bottom';
 
-export type SortModalStatus = 'unavailable' | 'loading' | 'empty' | 'success';
+export type SortModalStatus = 'unavailable' | 'loading' | 'empty' | 'success' | 'error';
 
 export interface SortMenuProps {
+  fullData: GetPageEntriesResponse[];
+  isFiltered: boolean;
+  isLoadingEntries: boolean;
+  onRetry: () => void;
   status: SortModalStatus;
   data: GetPageEntriesResponse[];
   onSortEnd: (item: UpdateContentRanksParams) => boolean;
@@ -11,6 +15,7 @@ export interface SortMenuProps {
 }
 
 export interface SortableListProps {
+  disabled?: boolean;
   data: GetPageEntriesResponse[];
   onSortEnd: (item: UpdateContentRanksParams) => boolean;
   selectedItemId?: number;
@@ -29,6 +34,7 @@ export interface ContentTypeResponse {
 
 export interface GetPageEntriesResponse {
   id: number;
+  documentId: string;
   isPlaceholder?: boolean;
   sourceLocale?: string;
   [key: string]: any;

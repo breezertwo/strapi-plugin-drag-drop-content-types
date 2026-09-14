@@ -20,6 +20,7 @@ Order your content types by rank easily via drag and drop. Simply add a rank fie
 - **Drag and Drop** or **Buttons** for moving content types up and down
 - **Multi-Locale Support** Updates all related available locales
 - **Permission Management**: Select which users can use the plugin with a specific permission
+- **Filtered Sorting**: Uses the list view's filters, searc & locale
 
 ![dragdropcrop](https://s14.gifyu.com/images/bTE3p.gif)
 
@@ -53,7 +54,15 @@ module.exports = {
 
 7. **Access sorting** via the Drag icon in the right top corner of the ListView
 
-## 🔧 Other config options
+### Sorting filtered entries
+
+The sort modal shows matching entries in rank order, regardless of the list view's page or display sort.
+Dragging or using Up/Down inserts the selected entry before or after the visible entry you cross in
+the complete ordering. Hidden entries keep their relative order, but their rank numbers can change.
+For example, with global order `A, B, C, D, E` and only `A, C, E` matching, moving `E` above `A`
+produces `E, A, B, C, D`.
+
+### Settings (in Admin Dashboard)
 
 - You can set a custom _TitleFieldName_ that will be used to display the title in the drag list instead of the default `mainField`
 - A second field can be displayed in the menu via the _SubtitleFieldName_. It can be either a string-like field or an object such as a relation, that has a `title` field named the same as the _TitleFieldName_.
@@ -65,7 +74,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built for [Strapi](https://strapi.io/) - The leading open-source headless CMS
 - Uses [Strapi Design System](https://design-system.strapi.io/) for UI components
-- Based on [drag-drop-content-types-strapi5](https://github.com/cslegany-synerinsoft/drag-drop-content-types-strapi5)
+- Based on [drag-drop-content-types-strapi5](https://github.com/cslegany-synerinsoft/drag-drop-content-types-strapi5) & [strapi-drag-drop-content-type-plugin](https://github.com/plantagoIT/strapi-drag-drop-content-type-plugin)
 
 ---
 

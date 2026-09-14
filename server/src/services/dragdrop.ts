@@ -1,3 +1,4 @@
+import { reorderDocuments } from '../../../shared/ordering';
 import type { Core } from '@strapi/strapi';
 import type * as StrapiTypes from '@strapi/types/dist';
 import type z from 'zod';
@@ -200,33 +201,11 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async move(
     config: PluginSettingsResponse,
-    { contentType, rankFieldName, locale, id, newIndex, position }: MoveParams
+    { contentType, rankFieldName, locale, id, newIndex, position, target }: MoveParams
   ) {
     const items = await getOrderedItems(strapi, { contentType, rankFieldName, locale });
 
-    const oldIndex = items.findIndex((item) => item.id === id);
-    if (oldIndex === -1) {
-      return [];
-    }
-
-    const rankedBlockSize = items.filter(
-      (item, index) => index !== oldIndex && typeof item[rankFieldName] === 'number'
-    ).length;
-
-    const dropIndex =
-      position === 'top' ? 0 : position === 'bottom' ? rankedBlockSize : (newIndex ?? oldIndex);
-
-    if (dropIndex > rankedBlockSize && typeof items[oldIndex][rankFieldName] !== 'number') {
-      return [];
-    }
-
-    const targetIndex = Math.min(Math.max(dropIndex, 0), rankedBlockSize);
-
-    const reordered = [...items];
-    const [moved] = reordered.splice(oldIndex, 1);
-    reordered.splice(targetIndex, 0, moved);
-
-    const rankedUntil = rankedBlockSize;
+    const reordered = reorderDocuments(items, rankFieldName, id, { newIndex, position, target });
 
     // repair broken ranks by collecting sibling ranks and rewriting them to match list positions
     const siblingRanks = new Map<string, Set<unknown>>();
@@ -244,8 +223,8 @@ const dragdrop = ({ strapi }: { strapi: Core.Strapi }) => ({
     const ranksByDocumentId = new Map<string, number | null>();
     const changedIds: number[] = [];
 
-    reordered.forEach((item, index) => {
-      const nextRank = index <= rankedUntil ? index : null;
+    reordered.forEach((item) => {
+      const nextRank = item[rankFieldName] as number | null;
       const ranks = siblingRanks.get(item.documentId);
       const alreadyAligned = ranks?.size === 1 && ranks.has(nextRank);
 

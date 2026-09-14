@@ -4,6 +4,7 @@ import { TItem, StyledListItem } from './StyledListItem';
 import { FetchedSettings } from '../types';
 
 type Props = HTMLAttributes<HTMLDivElement> & {
+  disabled?: boolean;
   item: TItem;
   index: number;
   settings: FetchedSettings;
@@ -13,6 +14,7 @@ type Props = HTMLAttributes<HTMLDivElement> & {
 
 const SortableListItemBase = ({
   item,
+  disabled,
   index,
   settings,
   isSelected,
@@ -22,7 +24,7 @@ const SortableListItemBase = ({
   const { ref, isDragging } = useSortable({
     id: item.id,
     index,
-    disabled: item.isPlaceholder,
+    disabled: disabled || item.isPlaceholder,
   });
 
   const handleClick = useCallback(
